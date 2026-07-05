@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Cliente - AstroControl{% endblock %}
+{% block page_header %}✏️ <span data-i18n="cli-editar-titulo">Editar Cliente</span>{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 24px; color: var(--texto-escuro);">
+            <span data-i18n="cli-alterar-info">Alterar Informações do Cliente</span> #{{ cliente[0] }}
+        </h3>
+        
+        <form method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group">
+                <label for="nome" data-i18n="label-nome">Nome Completo</label>
+                <input type="text" id="nome" name="nome" value="{{ cliente[1] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cpf" data-i18n="label-cpf">CPF</label>
+                <input type="text" id="cpf" name="cpf" value="{{ cliente[3] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="tel" data-i18n="th-telefone">Telefone / WhatsApp</label>
+                <input type="text" id="tel" name="tel" value="{{ cliente[2] or '' }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="email" data-i18n="th-email">E-mail</label>
+                <input type="email" id="email" name="email" value="{{ cliente[4] or '' }}">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; border-top: 1px solid var(--borda); padding-top: 20px;">
+                <a href="/clientes" class="btn btn-secondary" data-i18n="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn-salvar">Salvar Alterações</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

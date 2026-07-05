@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recibo #{{ venda[0] }} - AstroControl</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .actions-bar {
+            max-width: 450px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-print { background-color: #6366f1; color: #ffffff; }
+        .btn-print:hover { background-color: #4f46e5; }
+        .btn-back { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
+        .btn-back:hover { background-color: #f8fafc; }
+
+        /* Estilo do Cupom Térmico / Bobina */
+        .receipt-container {
+            max-width: 420px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            border: 1px solid #e2e8f0;
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #000000;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #000000;
+            padding-bottom: 15px;
+        }
+
+        .receipt-logo {
+            max-height: 60px;
+            max-width: 150px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .receipt-header h2 {
+            margin: 0 0 6px 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .receipt-header p {
+            margin: 3px 0;
+            font-size: 0.8rem;
+        }
+
+        .receipt-section {
+            border-bottom: 1px dashed #000000;
+            padding: 12px 0;
+        }
+
+        .receipt-section h3 {
+            margin: 0 0 8px 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+        }
+
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+        }
+
+        .receipt-table th {
+            text-align: left;
+            border-bottom: 1px dashed #000000;
+            padding: 4px 0;
+            font-weight: 700;
+        }
+
+        .receipt-table td {
+            padding: 6px 0;
+            vertical-align: top;
+        }
+
+        .total-box {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px dashed #000000;
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        .footer-msg {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.75rem;
+            border-top: 1px dashed #000000;
+            padding-top: 15px;
+        }
+
+        /* Estilos especiais de impressão */
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+            }
+            .actions-bar {
+                display: none;
+            }
+            .receipt-container {
+                box-shadow: none;
+                border: none;
+                max-width: 100%;
+                width: 100%;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA DE AÇÕES (ESCONDIDA NA IMPRESSÃO) -->
+    <div class="actions-bar">
+        <a href="javascript:history.back()" class="btn btn-back">
+            <i class="fa-solid fa-arrow-left"></i> <span data-i18n="btn-voltar">Voltar</span>
+        </a>
+        <button class="btn btn-print" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> <span>{% if status == 'orcamento' %}Imprimir Orçamento{% else %}Imprimir Recibo{% endif %}</span>
+        </button>
+    </div>
+
+    <!-- RECIPIENTE DO COMPROVANTE -->
+    <div class="receipt-container">
+        
+        <!-- CABEÇALHO DA LOJA -->
+        <div class="receipt-header">
+            {% if empresa and empresa[13] %}
+                <img src="{{ url_for('static', filename='uploads/' ~ empresa[13]) }}" alt="Logo" class="receipt-logo"><br>
+            {% endif %}
+            
+            <h2>{{ empresa[1] or 'LOJA CONTROL' }}</h2>
+            
+            {% if empresa %}
+                {% if empresa[2] %}<p><span data-i18n="config-razao">Razão Social</span>: {{ empresa[2] }}</p>{% endif %}
+                {% if empresa[3] %}<p>CNPJ: {{ empresa[3] }}</p>{% endif %}
+                {% if empresa[4] %}<p>Tel: {{ empresa[4] }}</p>{% endif %}
+                {% if empresa[7] %}
+                    <p>{{ empresa[7] }}, {{ empresa[8] }} - {{ empresa[9] }}</p>
+                    <p>{{ empresa[11] }}/{{ empresa[12] }} - CEP: {{ empresa[10] }}</p>
+                {% endif %}
+            {% else %}
+                <p data-i18n="rec-empresa-pendente">Configuração da empresa pendente</p>
+            {% endif %}
+        </div>
+
+        <!-- INFORMAÇÕES DA VENDA -->
+        <div class="receipt-section">
+            <div class="receipt-row">
+                <span><strong>{% if status == 'orcamento' %}ORÇAMENTO Nº:{% else %}CUPOM Nº:{% endif %}</strong></span>
+                <span>#{{ venda[0] }}</span>
+            </div>
+            <div class="receipt-row">
+                <span><strong>DATA/HORA:</strong></span>
+                <span>{{ data_formatada }}</span>
+            </div>
+            {% if status != 'orcamento' %}
+            <div class="receipt-row">
+                <span><strong>PAGAMENTO:</strong></span>
+                <span>
+                    <span>{{ venda[5] }}</span>
+                </span>
+            </div>
+            {% endif %}
+            {% if vendedor_nome %}
+            <div class="receipt-row">
+                <span><strong>ATENDENTE:</strong></span>
+                <span>{{ vendedor_nome }}</span>
+            </div>
+            {% endif %}
+            <div class="receipt-row">
+                <span><strong>CAIXA:</strong></span>
+                <span>{{ caixa_nome }}</span>
+            </div>
+        </div>
+
+        <!-- CLIENTE -->
+        <div class="receipt-section">
+            <h3 data-i18n="th-cliente">Cliente</h3>
+            <div class="receipt-row">
+                <span>Nome:</span>
+                <span>
+                    {% if venda[1] %}
+                        {{ venda[1] }}
+                    {% else %}
+                        <span data-i18n="rec-consumidor-geral">Consumidor Geral</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% if venda[2] %}
+            <div class="receipt-row">
+                <span>CPF:</span>
+                <span>{{ venda[2] }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ITENS DA VENDA -->
+        <div class="receipt-section">
+            <h3>{% if status == 'orcamento' %}Itens Cotados{% else %}Itens Vendidos{% endif %}</h3>
+            <table class="receipt-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="th-descricao">DESCRIÇÃO</th>
+                        <th style="width: 50px; text-align: center;" data-i18n="th-quantidade">QTD</th>
+                        <th style="width: 80px; text-align: right;" data-i18n="th-preco">UNIT</th>
+                        <th style="width: 90px; text-align: right;" data-i18n="th-total">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in itens %}
+                    <tr>
+                        <td>{{ item[0] }}</td>
+                        <td style="text-align: center;">{{ item[1] }}</td>
+                        <td style="text-align: right;">{{ "%.2f"|format(item[2]) }}</td>
+                        <td style="text-align: right;">{{ "%.2f"|format(item[3]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ENTREGA SE HOUVER -->
+        {% if venda[6] == 1 %}
+        <div class="receipt-section">
+            <h3 data-i18n="pdv-endereco-entrega">Dados de Entrega</h3>
+            <div class="receipt-row">
+                <span>Destino:</span>
+                <span>{{ venda[9] }}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Tel Contato:</span>
+                <span>{{ venda[10] }}</span>
+            </div>
+            <div style="margin-top: 6px;">
+                <span>Endereço:</span><br>
+                <span style="font-size: 0.8rem;">
+                    {{ venda[11] }}, {{ venda[12] }} {% if venda[15] %}({{ venda[15] }}){% endif %}<br>
+                    Bairro: {{ venda[13] }} - CEP: {{ venda[14] }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TOTALIZADOR -->
+        {% if venda[17] and venda[17] > 0 %}
+        <div style="text-align: right; margin-top: 10px; border-top: 1px dashed #000000; padding-top: 8px;">
+            <div class="receipt-row" style="font-size: 0.8rem;">
+                <span>SUBTOTAL:</span>
+                <span>R$ {{ "%.2f"|format(venda[7] + venda[17]) }}</span>
+            </div>
+            <div class="receipt-row" style="font-size: 0.8rem; color: #dc2626;">
+                <span>DESCONTO CUPOM ({{ venda[16] }}):</span>
+                <span>- R$ {{ "%.2f"|format(venda[17]) }}</span>
+            </div>
+        </div>
+        {% endif %}
+        <div class="total-box">
+            <span><strong>{% if status == 'orcamento' %}TOTAL ESTIMADO:{% else %}TOTAL GERAL:{% endif %}</strong></span>
+            <span>R$ {{ "%.2f"|format(venda[7]) }}</span>
+        </div>
+
+        <!-- MENSAGEM FINAL -->
+        <div class="footer-msg">
+            {% if status == 'orcamento' %}
+                <p>Orçamento sem valor fiscal.</p>
+                <p>Válido por 7 dias a partir da data de emissão.</p>
+            {% else %}
+                <p data-i18n="rec-obrigado">Obrigado pela preferência!</p>
+                <p data-i18n="rec-volte-sempre">Volte Sempre!</p>
+            {% endif %}
+        </div>
+
+    </div>
+
+</body>
+</html>

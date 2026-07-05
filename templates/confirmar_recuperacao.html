@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Código - AstroControl</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <script>
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    </script>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-box-container" style="max-width: 500px; min-height: 420px; display: block; border-radius: 24px;">
+            
+            <div class="login-card-side" style="padding: 40px; border-radius: 24px; width: 100%; box-sizing: border-box;">
+                
+                <div class="brand-logo">
+                    <img src="{{ url_for('static', filename='favicon.png') }}" style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--primary); box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);" alt="Logo">
+                    <span class="logo-text">AstroControl</span>
+                </div>
+
+                <div class="login-header">
+                    <h2>Confirmar Código</h2>
+                    <p style="font-size: 0.85rem; color: var(--texto-mutado); line-height: 1.4; margin-top: 8px;">
+                        Foi enviado um código de redefinição para <span style="font-weight: 600; color: var(--primary);">{{ email }}</span>.
+                    </p>
+                </div>
+
+                <div style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.82rem; color: var(--primary); line-height: 1.4; display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fa-solid fa-terminal" style="margin-top: 2px;"></i>
+                    <span>
+                        <strong>Ambiente Local (Localhost):</strong> O código de redefinição foi impresso no terminal/prompt de comando onde o servidor Flask Python está rodando!
+                    </span>
+                </div>
+
+                <!-- FLASH ALERTS -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}" style="margin: 0; padding: 10px 14px; font-size: 0.85rem; border-radius: 8px;">
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" class="login-form">
+                    <div class="input-group">
+                        <label for="codigo">Código de 6 dígitos</label>
+                        <input type="text" id="codigo" name="codigo" placeholder="Digite os 6 números" required maxlength="6" style="text-align: center; font-size: 1.4rem; letter-spacing: 4px; font-family: monospace;" autocomplete="off">
+                    </div>
+
+                    <button type="submit" class="btn-submit" style="margin-top: 10px;">Verificar Código</button>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="/esqueci-senha" class="forgot-link" style="font-size: 0.85rem;"><i class="fa-solid fa-arrow-left"></i> Solicitar novo código</a>
+                    </div>
+                </form>
+
+            </div>
+            
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AstroControl{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <script>
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    </script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+    <style>
+        /* Base sidebar layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            border-right: 1px solid var(--borda-sidebar);
+            transition: all 0.25s ease;
+        }
+
+        .sidebar-brand {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--borda-sidebar);
+        }
+
+        .sidebar-brand i {
+            font-size: 1.5rem;
+            color: #6366f1;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 16px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem;
+            width: 20px;
+        }
+
+        .nav-item:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            background-color: #6366f1;
+            color: #ffffff;
+        }
+
+        .sidebar-footer {
+            padding: 24px 16px;
+            border-top: 1px solid var(--borda-sidebar);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #f87171;
+            text-decoration: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            width: calc(100% - 260px);
+            background-color: var(--bg-principal);
+            min-height: 100vh;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: var(--bg-topbar);
+            padding: 16px 30px;
+            border-radius: 12px;
+            border: 1px solid var(--borda);
+            box-shadow: var(--shadow);
+        }
+
+        .page-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--texto-escuro);
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-profile .avatar {
+            width: 32px;
+            height: 32px;
+            background-color: var(--bg-secondary);
+            color: var(--texto-escuro);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .user-profile span {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--texto-escuro);
+        }
+        
+        .btn-theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--texto-mutado);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .btn-theme-toggle:hover {
+            background-color: var(--bg-secondary-hover);
+            color: var(--texto-escuro);
+        }
+
+        .badge-role {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-master { background-color: #eef2ff; color: #6366f1; }
+        .badge-vendedor { background-color: #ecfdf5; color: #10b981; }
+        .badge-caixa { background-color: #fffbeb; color: #f59e0b; }
+
+        /* Notification Alerts */
+        .alerts-container {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-success { background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-danger { background-color: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+        .alert-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; }
+            .sidebar-brand h2, .sidebar-brand span, .nav-item span, .logout-btn span { display: none; }
+            .sidebar-search-container { display: none !important; }
+            .main-content { margin-left: 80px; width: calc(100% - 80px); padding: 20px; }
+            .sidebar-brand { justify-content: center; }
+            .nav-item { justify-content: center; padding: 12px; }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .sidebar-brand {
+                padding: 16px;
+                justify-content: center;
+            }
+            .sidebar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                padding: 10px;
+                justify-content: center;
+                gap: 8px;
+                overflow-y: visible;
+            }
+            .nav-item {
+                padding: 8px 12px;
+                margin: 0;
+            }
+            .sidebar-footer {
+                padding: 10px;
+                border-top: none;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 16px;
+            }
+            .topbar {
+                padding: 12px 20px;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+    {% block styles %}{% endblock %}
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand" style="gap: 12px; align-items: center; display: flex; padding: 24px;">
+                <img src="{{ url_for('static', filename='favicon.png') }}" style="width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--primary); box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);" alt="Logo">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 850; background: linear-gradient(to right, #ffffff, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; letter-spacing: -0.5px;">AstroControl</h2>
+                    {% if nome_empresa_sessao %}
+                        <span style="font-size: 0.7rem; color: #a1a1aa; font-weight: 500; display: block; margin-top: 2px;">{{ nome_empresa_sessao }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Campo de Busca no Menu (Sidebar Search) -->
+            {% if session.get('usuario_id') %}
+            <div class="sidebar-search-container" style="padding: 14px 16px 0 16px;">
+                <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; color: #64748b; font-size: 0.85rem; pointer-events: none;"></i>
+                    <input type="text" id="sidebar-search" placeholder="Pesquisar no menu..." style="width: 100%; padding: 8px 12px 8px 32px; font-size: 0.82rem; border-radius: 8px; border: 1px solid var(--borda, rgba(255,255,255,0.08)); background-color: rgba(0, 0, 0, 0.2); color: #ffffff; outline: none; transition: all 0.2s ease;" onfocus="this.style.borderColor='#6366f1'; this.style.backgroundColor='rgba(0,0,0,0.4)';" onblur="this.style.borderColor='var(--borda)'; this.style.backgroundColor='rgba(0,0,0,0.2)';" />
+                </div>
+            </div>
+            {% endif %}
+            
+            <nav class="sidebar-nav">
+                {% if session.get('usuario_id') %}
+                    <a href="/dashboard" class="nav-item" id="nav-dashboard">
+                        <i class="fa-solid fa-chart-pie"></i> <span data-i18n="menu-dashboard">Dashboard</span>
+                    </a>
+                    
+                    {% if session.get('cargo') == 'master' and session.get('loja_id') == 1 %}
+                        <a href="/lojas" class="nav-item" id="nav-lojas">
+                            <i class="fa-solid fa-store"></i> <span>Lojas</span>
+                        </a>
+                        <a href="/limpeza" class="nav-item" id="nav-limpeza">
+                            <i class="fa-solid fa-broom"></i> <span>Limpeza de Dados</span>
+                        </a>
+                    {% endif %}
+                    
+                    <a href="/produtos" class="nav-item" id="nav-produtos">
+                        <i class="fa-solid fa-box"></i> <span data-i18n="menu-produtos">Produtos</span>
+                    </a>
+                    
+                    <a href="/clientes" class="nav-item" id="nav-clientes">
+                        <i class="fa-solid fa-users-viewfinder"></i> <span data-i18n="menu-clientes">Clientes</span>
+                    </a>
+                    
+                    <a href="/vendas" class="nav-item" id="nav-vendas">
+                        <i class="fa-solid fa-cart-shopping"></i> <span data-i18n="menu-vendas">Vendas</span>
+                    </a>
+                    
+                    {% set cargo = session.get('cargo') %}
+                    {% set perms = session.get('permissoes', '') %}
+
+                    {% if cargo in ['master', 'caixa', 'admin'] or ('pdv' in perms) %}
+                        <a href="/pdv" class="nav-item" id="nav-pdv">
+                            <i class="fa-solid fa-receipt"></i> <span data-i18n="menu-pdv">PDV / Caixa</span>
+                        </a>
+                    {% endif %}
+
+                    {% if cargo in ['master', 'admin'] or ('usuarios' in perms) %}
+                        <a href="/usuarios" class="nav-item" id="nav-usuarios">
+                            <i class="fa-solid fa-user-gear"></i> <span data-i18n="menu-colaboradores">Colaboradores</span>
+                        </a>
+                    {% endif %}
+
+                    {% if cargo in ['master', 'admin'] %}
+                        <a href="/cupons" class="nav-item" id="nav-cupons">
+                            <i class="fa-solid fa-ticket"></i> <span>Cupons & Descontos</span>
+                        </a>
+                    {% endif %}
+
+                    {% if cargo in ['master', 'admin'] or ('categorias' in perms) %}
+                        <a href="/categorias" class="nav-item" id="nav-categorias">
+                            <i class="fa-solid fa-tags"></i> <span>Categorias</span>
+                        </a>
+                    {% endif %}
+
+                    {% if cargo in ['master', 'admin'] or ('historico' in perms) %}
+                        <a href="/historico" class="nav-item" id="nav-historico">
+                            <i class="fa-solid fa-chart-line"></i> <span data-i18n="menu-historico">Historico / Relatorios</span>
+                        </a>
+                    {% endif %}
+
+                    {% if cargo == 'master' or ('despesas' in perms) %}
+                        <a href="/despesas" class="nav-item" id="nav-despesas">
+                            <i class="fa-solid fa-file-invoice-dollar"></i> <span data-i18n="menu-despesas">Despesas</span>
+                        </a>
+                    {% endif %}
+
+                    {% if cargo == 'master' or ('configuracao' in perms) %}
+                        <a href="/configuracao" class="nav-item" id="nav-configuracao">
+                            <i class="fa-solid fa-gears"></i> <span data-i18n="menu-configuracao">Configuracoes</span>
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </nav>
+            
+            <div class="sidebar-footer" style="padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                <img src="{{ url_for('static', filename='images/astro_floating.png') }}" class="floating-astronaut" style="max-width: 65px; margin-bottom: 5px; filter: drop-shadow(0 5px 15px rgba(139, 92, 246, 0.35));" alt="Floating Astronaut">
+                <a href="/logout" class="logout-btn" style="width: 100%;">
+                    <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="menu-sair">Sair</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="page-title">
+                    <h1>{% block page_header %}{% endblock %}</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <!-- Language Toggle Button -->
+                    <button type="button" id="lang-toggle" class="btn-theme-toggle" onclick="toggleLanguage()" style="font-size: 0.85rem; font-weight: 700; min-width: 44px;" title="Alternar Idioma (PT/EN)">
+                        🌐 EN
+                    </button>
+                    
+                    <!-- Theme Toggle Button -->
+                    <button type="button" id="theme-toggle" class="btn-theme-toggle" title="Alternar Tema (Claro/Escuro)">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    
+                    <div class="user-profile">
+                        <span class="badge-role badge-{{ session.get('cargo', 'vendedor') }}">
+                            {{ session.get('cargo', 'vendedor') }}
+                        </span>
+                        <div class="avatar">
+                            {{ session.get('nome', 'U')[0] | upper }}
+                        </div>
+                        <span>{{ session.get('nome', 'Usuário') }}</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- FLASH ALERTS -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alerts-container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'danger' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- BLOCK CONTENT -->
+            {% block content %}{% endblock %}
+            
+        </main>
+        
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Lógica do Theme Toggler
+            const toggleButton = document.getElementById("theme-toggle");
+            const toggleIcon = toggleButton.querySelector("i");
+            
+            const currentTheme = document.documentElement.getAttribute("data-theme");
+            if (currentTheme === "dark") {
+                toggleIcon.className = "fa-solid fa-sun";
+            } else {
+                toggleIcon.className = "fa-solid fa-moon";
+            }
+            
+            toggleButton.addEventListener("click", () => {
+                const themeNow = document.documentElement.getAttribute("data-theme");
+                let newTheme = "light";
+                if (themeNow === "light") {
+                    newTheme = "dark";
+                    toggleIcon.className = "fa-solid fa-sun";
+                } else {
+                    toggleIcon.className = "fa-solid fa-moon";
+                }
+                document.documentElement.setAttribute("data-theme", newTheme);
+                localStorage.setItem("theme", newTheme);
+            });
+
+            // Pesquisa dinâmica na sidebar (Filtro de Menu)
+            const sidebarSearch = document.getElementById("sidebar-search");
+            if (sidebarSearch) {
+                sidebarSearch.addEventListener("input", function() {
+                    const query = this.value.toLowerCase().trim();
+                    const navItems = document.querySelectorAll(".sidebar-nav .nav-item");
+                    
+                    navItems.forEach(item => {
+                        const text = item.textContent.toLowerCase();
+                        if (text.includes(query)) {
+                            item.style.display = "flex";
+                        } else {
+                            item.style.display = "none";
+                        }
+                    });
+                });
+            }
+
+            const currentPath = window.location.pathname;
+            const menuItems = {
+                '/dashboard': 'nav-dashboard',
+                '/produtos': 'nav-produtos',
+                '/cadastrar-produto': 'nav-produtos',
+                '/editar-produto': 'nav-produtos',
+                '/clientes': 'nav-clientes',
+                '/cadastrar-cliente': 'nav-clientes',
+                '/editar-cliente': 'nav-clientes',
+                '/vendas': 'nav-vendas',
+                '/pdv': 'nav-pdv',
+                '/usuarios': 'nav-usuarios',
+                '/editar-usuario': 'nav-usuarios',
+                '/despesas': 'nav-despesas',
+                '/historico': 'nav-historico',
+                '/configuracao': 'nav-configuracao'
+            };
+            
+            // Tenta achar um match exato primeiro, senão verifica se o path começa com a chave
+            let activeId = null;
+            if (menuItems[currentPath]) {
+                activeId = menuItems[currentPath];
+            } else {
+                for (const path in menuItems) {
+                    if (currentPath.startsWith(path)) {
+                        activeId = menuItems[path];
+                        break;
+                    }
+                }
+            }
+            
+            if (activeId) {
+                const element = document.getElementById(activeId);
+                if (element) {
+                    element.classList.add("active");
+                }
+            }
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

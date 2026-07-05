@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AstroControl - Sistema SaaS de Gestão Comercial e PDV</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --bg-deep: #0b0f19;
+            --bg-card: #151c2c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Header / Navbar */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(11, 15, 25, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            filter: drop-shadow(0 0 8px var(--primary-glow));
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid var(--border);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #ffffff;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 160px 5% 80px 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            width: 300px;
+            height: 300px;
+            background: var(--primary);
+            filter: blur(130px);
+            opacity: 0.25;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+            max-width: 800px;
+            margin-bottom: 24px;
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 50px;
+            letter-spacing: -0.5px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 35px 30px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(139, 92, 246, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon {
+            width: 55px;
+            height: 55px;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 24px;
+            box-shadow: inset 0 0 10px rgba(139, 92, 246, 0.05);
+        }
+
+        .feature-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        /* Planos / Preços */
+        .pricing {
+            padding: 80px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            align-items: stretch;
+            margin-top: 40px;
+        }
+
+        .price-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .price-card.featured {
+            border-color: var(--primary);
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.15);
+        }
+
+        .price-card.featured::before {
+            content: 'MAIS VENDIDO';
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 6px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .price-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .price-card .price {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin: 20px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .price-card .price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .price-features {
+            list-style: none;
+            margin: 24px 0 40px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .price-features li {
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0;
+        }
+
+        .price-features li i {
+            color: #10b981;
+            font-size: 1rem;
+        }
+
+        .price-card .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 14px;
+            margin-top: auto;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #060911;
+            border-top: 1px solid var(--border);
+            padding: 50px 5% 30px 5%;
+            text-align: center;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        footer p {
+            margin-bottom: 12px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+            .hero p {
+                font-size: 1rem;
+            }
+            .section-title {
+                font-size: 1.8rem;
+            }
+            .price-card {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <header>
+        <a href="/" class="logo">
+            <i class="fa-solid fa-meteor"></i> AstroControl
+        </a>
+        <div class="nav-buttons">
+            <a href="/login" class="btn btn-outline">
+                <i class="fa-solid fa-right-to-bracket"></i> Acessar Conta
+            </a>
+            <a href="/assinar" class="btn btn-primary">
+                <i class="fa-solid fa-rocket"></i> Começar Grátis
+            </a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>A órbita perfeita para a <span class="text-gradient">gestão inteligente</span> do seu comércio</h1>
+        <p>O PDV mais veloz e o controle de estoque multi-loja mais poderoso reunidos em uma única plataforma SaaS de alta performance.</p>
+        <div class="d-flex gap-3">
+            <a href="/assinar" class="btn btn-primary" style="font-size: 1.05rem; padding: 14px 35px;">
+                <i class="fa-solid fa-rocket"></i> Criar Minha Loja Agora
+            </a>
+        </div>
+    </section>
+
+    <!-- Recursos / Vantagens -->
+    <section class="features">
+        <h2 class="section-title">Construído para Negócios do Futuro</h2>
+        <div class="features-grid">
+            <!-- PDV Veloz -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <h3>PDV & Caixa Veloz</h3>
+                <p>Abra caixa, registre vendas, consulte clientes e dê baixa em estoque instantaneamente em um fluxo de vendas otimizado.</p>
+            </div>
+
+            <!-- Multi-Loja -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <h3>Arquitetura Multi-Tenant</h3>
+                <p>Gerencie múltiplas lojas físicas ou filiais sob uma única conta administradora central com blindagem completa de dados.</p>
+            </div>
+
+            <!-- Cupons & Promocoes -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-tags"></i>
+                </div>
+                <h3>Cupons e Promoções</h3>
+                <p>Crie e gerencie campanhas de cupons com descontos percentuais ou fixos, limites de uso e controle de expiração automático.</p>
+            </div>
+
+            <!-- Orçamentos -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
+                <h3>Orçamentos & Pré-Vendas</h3>
+                <p>Monte cotações rápidas para clientes sem comprometer o estoque local, convertendo-os em vendas faturadas em um clique.</p>
+            </div>
+
+            <!-- Colaboradores -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h3>Gestão de Equipe</h3>
+                <p>Defina comissões de vendedores e gerencie colaboradores com diferentes níveis de permissão às áreas da sua empresa.</p>
+            </div>
+
+            <!-- Segurança Estelar -->
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3>Segurança Máxima</h3>
+                <p>Recuperação de senhas segura, controle de transações SQLite estruturadas e auditoria simplificada para a sua empresa.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Planos / Preços -->
+    <section class="pricing">
+        <h2 class="section-title">Planos Simples e Transparentes</h2>
+        <div class="pricing-grid">
+            <!-- Plano Bronze -->
+            <div class="price-card">
+                <h3>Plano Cometa</h3>
+                <p class="text-muted">Perfeito para pequenos negócios individuais</p>
+                <div class="price">R$ 49<span>/mês</span></div>
+                <ul class="price-features">
+                    <li><i class="fa-solid fa-circle-check"></i> 1 Loja Registrada</li>
+                    <li><i class="fa-solid fa-circle-check"></i> PDV Completo</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Até 150 Produtos cadastrados</li>
+                    <li><i class="fa-solid fa-circle-check"></i> 3 Vendedores integrados</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Suporte por e-mail</li>
+                </ul>
+                <a href="/assinar" class="btn btn-outline">Começar Plano Cometa</a>
+            </div>
+
+            <!-- Plano Prata -->
+            <div class="price-card featured">
+                <h3>Plano Estrela</h3>
+                <p class="text-muted">Ideal para comércios em expansão acelerada</p>
+                <div class="price">R$ 99<span>/mês</span></div>
+                <ul class="price-features">
+                    <li><i class="fa-solid fa-circle-check"></i> Até 3 Lojas (Multi-loja)</li>
+                    <li><i class="fa-solid fa-circle-check"></i> PDV Cósmico Veloz</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Cadastro Ilimitado de Produtos</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Vendedores e Caixas Ilimitados</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Cupons & Orçamentos Ativos</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Suporte Prioritário</li>
+                </ul>
+                <a href="/assinar" class="btn btn-primary">Começar Teste Grátis</a>
+            </div>
+
+            <!-- Plano Ouro -->
+            <div class="price-card">
+                <h3>Plano Supernova</h3>
+                <p class="text-muted">Controle corporativo para redes de franquias</p>
+                <div class="price">R$ 199<span>/mês</span></div>
+                <ul class="price-features">
+                    <li><i class="fa-solid fa-circle-check"></i> Lojas Ilimitadas</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Gestão Avançada de Caixa</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Relatórios & BI Avançados</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Todos os Módulos Premium Liberados</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Suporte Consultivo Dedicado</li>
+                </ul>
+                <a href="/assinar" class="btn btn-outline">Começar Plano Supernova</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 AstroControl. Todos os direitos reservados.</p>
+        <p class="small">A órbita perfeita para a gestão de lojas físicas, PDV e automação de vendas.</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+
+{% block title %}Cupons e Descontos - AstroControl{% endblock %}
+
+{% block styles %}
+<style>
+    /* CSS Encapsulado para Cupons */
+    .cupons-layout {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 24px;
+        align-items: start;
+        margin-top: 15px;
+    }
+    
+    @media (max-width: 1100px) {
+        .cupons-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .cupons-card {
+        background-color: var(--bg-card, #151c2c);
+        border: 1px solid var(--borda, rgba(255, 255, 255, 0.08));
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .cupons-card-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--borda, rgba(255, 255, 255, 0.08));
+        background: rgba(139, 92, 246, 0.03);
+    }
+    
+    .cupons-card-header h5 {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--texto-escuro, #f8fafc);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .cupons-card-body {
+        padding: 20px;
+    }
+    
+    .cupons-field-group {
+        margin-bottom: 18px;
+    }
+    
+    .cupons-field-group label {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--texto-mutado, #94a3b8);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .cupons-input, .cupons-select {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        border-radius: 8px;
+        border: 1px solid var(--borda, rgba(255, 255, 255, 0.08));
+        background-color: var(--bg-primary, #0b0f19);
+        color: var(--texto-escuro, #f8fafc);
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+    
+    .cupons-input:focus, .cupons-select:focus {
+        border-color: var(--primary, #8b5cf6);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+    }
+    
+    .cupons-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .cupons-input-prefix {
+        position: absolute;
+        left: 14px;
+        font-weight: 700;
+        color: var(--primary, #8b5cf6);
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+    
+    .cupons-input-with-prefix {
+        padding-left: 36px !important;
+    }
+    
+    .cupons-help-text {
+        font-size: 0.72rem;
+        color: var(--texto-mutado, #94a3b8);
+        margin-top: 5px;
+        display: block;
+        line-height: 1.35;
+    }
+    
+    .cupons-btn-submit {
+        width: 100%;
+        background-color: var(--primary, #8b5cf6);
+        color: #ffffff;
+        border: none;
+        padding: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+    
+    .cupons-btn-submit:hover {
+        background-color: #7c3aed;
+        transform: translateY(-1px);
+    }
+    
+    /* Estilos de Tabela */
+    .cupons-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+    }
+    
+    .cupons-table th {
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--texto-mutado, #94a3b8);
+        text-transform: uppercase;
+        border-bottom: 2px solid var(--borda, rgba(255, 255, 255, 0.08));
+        background-color: rgba(255, 255, 255, 0.01);
+    }
+    
+    .cupons-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--borda, rgba(255, 255, 255, 0.08));
+        color: var(--texto-escuro, #f8fafc);
+        vertical-align: middle;
+    }
+    
+    .cupons-table tr:hover {
+        background-color: rgba(255, 255, 255, 0.01);
+    }
+    
+    .cupons-badge-code {
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background-color: rgba(139, 92, 246, 0.1);
+        color: #a78bfa;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+    
+    .cupons-badge-status {
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-block;
+    }
+    
+    .cupons-badge-status.active {
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .cupons-badge-status.inactive {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: var(--texto-mutado, #94a3b8);
+        border: 1px solid var(--borda, rgba(255, 255, 255, 0.08));
+    }
+    
+    .cupons-btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        color: var(--texto-escuro, #f8fafc);
+        background-color: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--borda, rgba(255, 255, 255, 0.08));
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+    
+    .cupons-btn-action:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+    
+    .cupons-btn-action.toggle-active {
+        color: #10b981;
+    }
+    .cupons-btn-action.toggle-inactive {
+        color: var(--texto-mutado, #94a3b8);
+    }
+    
+    .cupons-btn-action.delete {
+        color: #ef4444;
+    }
+    
+    .cupons-btn-action.delete:hover {
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+    
+    .alert-custom {
+        padding: 12px 18px;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        margin-bottom: 20px;
+        border: 0;
+        background-color: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .alert-custom.danger {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="font-family: 'Inter', sans-serif; padding-top: 10px;">
+    
+    <!-- Cabeçalho -->
+    <div style="margin-bottom: 25px; border-bottom: 1px solid var(--borda, rgba(255,255,255,0.08)); padding-bottom: 15px;">
+        <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--texto-escuro, #f8fafc); margin: 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-ticket" style="color: var(--primary, #8b5cf6);"></i> Cupons & Descontos
+        </h1>
+        <p style="font-size: 0.85rem; color: var(--texto-mutado, #94a3b8); margin: 5px 0 0 0;">
+            Gerencie códigos promocionais de descontos para suas vendas e caixa
+        </p>
+    </div>
+
+    <!-- Mensagens Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert-custom {{ 'danger' if category == 'danger' or category == 'error' else '' }}">
+                    <i class="fa-solid {{ 'fa-circle-exclamation' if category == 'danger' or category == 'error' else 'fa-circle-check' }}"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="cupons-layout">
+        <!-- Coluna Esquerda: Cadastro -->
+        <div class="cupons-card">
+            <div class="cupons-card-header">
+                <h5><i class="fa-solid fa-circle-plus" style="color: var(--primary, #8b5cf6);"></i> Criar Novo Cupom</h5>
+            </div>
+            <div class="cupons-card-body">
+                <form method="POST">
+                    
+                    <div class="cupons-field-group">
+                        <label for="codigo">Código do Cupom:</label>
+                        <input type="text" class="cupons-input" id="codigo" name="codigo" required placeholder="Ex: ASTRO10" style="text-transform: uppercase;" autocomplete="off">
+                        <small class="cupons-help-text">Sem espaços. Convertido para letras maiúsculas automaticamente.</small>
+                    </div>
+
+                    <div class="cupons-field-group">
+                        <label for="tipo">Tipo de Desconto:</label>
+                        <select class="cupons-select" id="tipo" name="tipo" required>
+                            <option value="percentual">Porcentagem (%)</option>
+                            <option value="valor">Valor Fixo (R$)</option>
+                        </select>
+                    </div>
+
+                    <div class="cupons-field-group">
+                        <label for="valor">Valor do Desconto:</label>
+                        <div class="cupons-input-container">
+                            <span class="cupons-input-prefix" id="prefixo-valor">%</span>
+                            <input type="number" class="cupons-input cupons-input-with-prefix" id="valor" name="valor" required min="0.01" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <div class="cupons-field-group">
+                        <label for="validade">Data de Validade (Opcional):</label>
+                        <input type="date" class="cupons-input" id="validade" name="validade">
+                        <small class="cupons-help-text">O cupom expirará no final do dia selecionado.</small>
+                    </div>
+
+                    <div class="cupons-field-group">
+                        <label for="limite_usos">Limite de Usos (Opcional):</label>
+                        <input type="number" class="cupons-input" id="limite_usos" name="limite_usos" min="1" placeholder="Ex: 50">
+                        <small class="cupons-help-text">Deixe em branco para permitir utilizações ilimitadas.</small>
+                    </div>
+
+                    <button type="submit" class="cupons-btn-submit">
+                        <i class="fa-solid fa-circle-check"></i> Cadastrar Cupom
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Coluna Direita: Listagem -->
+        <div class="cupons-card">
+            <div class="cupons-card-header">
+                <h5><i class="fa-solid fa-list-check" style="color: var(--primary, #8b5cf6);"></i> Cupons Cadastrados</h5>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="cupons-table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Desconto</th>
+                            <th>Validade</th>
+                            <th style="text-align: center;">Utilização</th>
+                            <th style="text-align: center;">Status</th>
+                            <th style="text-align: right; width: 120px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if cupons %}
+                            {% for c in cupons %}
+                                <tr>
+                                    <td>
+                                        <span class="cupons-badge-code">{{ c[1] }}</span>
+                                    </td>
+                                    <td style="font-weight: 700;">
+                                        {% if c[2] == 'percentual' %}
+                                            {{ c[3] }}%
+                                        {% else %}
+                                            R$ {{ "%.2f"|format(c[3]) }}
+                                        {% endif %}
+                                    </td>
+                                    <td style="color: var(--texto-mutado, #94a3b8);">
+                                        {% if c[4] %}
+                                            {% set parts = c[4].split('-') %}
+                                            {{ parts[2] }}/{{ parts[1] }}/{{ parts[0] }}
+                                        {% else %}
+                                            <span style="opacity: 0.5; font-size: 0.8rem;">Sem expiração</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <div style="display: flex; flex-direction: column; align-items: center; line-height: 1.2;">
+                                            <strong style="color: var(--texto-escuro, #f8fafc); font-size: 0.9rem;">{{ c[6] }}</strong>
+                                            <span style="font-size: 0.7rem; color: var(--texto-mutado, #94a3b8);">
+                                                de {% if c[5] is not none %}{{ c[5] }}{% else %}ilimitado{% endif %}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        {% if c[7] == 1 %}
+                                            <span class="cupons-badge-status active">Ativo</span>
+                                        {% else %}
+                                            <span class="cupons-badge-status inactive">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <div style="display: inline-flex; gap: 6px; justify-content: flex-end; align-items: center;">
+                                            <a href="/cupons/status/{{ c[0] }}" class="cupons-btn-action {{ 'toggle-active' if c[7] == 1 else 'toggle-inactive' }}" title="Ativar/Desativar">
+                                                {% if c[7] == 1 %}
+                                                    <i class="fa-solid fa-toggle-on" style="font-size: 1.1rem;"></i>
+                                                {% else %}
+                                                    <i class="fa-solid fa-toggle-off" style="font-size: 1.1rem;"></i>
+                                                {% endif %}
+                                            </a>
+                                            <a href="/cupons/excluir/{{ c[0] }}" class="cupons-btn-action delete" title="Excluir Definitivo" onclick="return confirm('Deseja realmente excluir permanentemente o cupom {{ c[1] }}?')">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 50px 20px; color: var(--texto-mutado, #94a3b8);">
+                                    <i class="fa-solid fa-ticket-simple" style="font-size: 2.2rem; opacity: 0.3; margin-bottom: 12px; display: block;"></i>
+                                    Nenhum cupom de desconto cadastrado para a sua loja.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const selectTipo = document.getElementById("tipo");
+        const prefixoValor = document.getElementById("prefixo-valor");
+        
+        selectTipo.addEventListener("change", function() {
+            if (this.value === "percentual") {
+                prefixoValor.textContent = "%";
+            } else {
+                prefixoValor.textContent = "R$";
+            }
+        });
+
+        // Ativa o link correspondente no menu
+        const navCupons = document.getElementById("nav-cupons");
+        if (navCupons) {
+            navCupons.classList.add("active");
+        }
+    });
+</script>
+{% endblock %}

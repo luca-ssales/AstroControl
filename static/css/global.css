@@ -1,0 +1,424 @@
+/* ==========================================================================
+   SISTEMA DE CORES E VARIÁVEIS GLOBAIS
+   ========================================================================== */
+:root {
+    --bg-principal: #f3f4f6;
+    --bg-card: #ffffff;
+    --bg-topbar: #ffffff;
+    --bg-input: #ffffff;
+    --texto-escuro: #0f172a;
+    --texto-mutado: #64748b;
+    --texto-label: #334155;
+    --borda: #e5e7eb;
+    
+    /* Botão Secundário */
+    --bg-secondary: #f1f5f9;
+    --texto-secondary: #475569;
+    --borda-secondary: #e2e8f0;
+    --bg-secondary-hover: #e2e8f0;
+
+    /* Tabela Headers */
+    --bg-table-header: #f8fafc;
+    --texto-table-header: #475569;
+    --bg-table-row-hover: #f8fafc;
+
+    /* Sidebar */
+    --bg-sidebar: #0b0f19;
+    --borda-sidebar: rgba(255, 255, 255, 0.05);
+
+    /* Cores de Destaque */
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+    --sucesso: #06b6d4;
+    --sucesso-hover: #0891b2;
+    --perigo: #f43f5e;
+    --perigo-hover: #e11d48;
+    --alerta: #fb5b24;
+    --alerta-hover: #ea580c;
+    
+    /* Bordas e Sombras */
+    --radius: 16px;
+    --shadow: 0 4px 20px -2px rgba(139, 92, 246, 0.06), 0 2px 8px -1px rgba(0,0,0,0.03);
+    --shadow-lg: 0 10px 30px -3px rgba(139, 92, 246, 0.12), 0 4px 12px -2px rgba(0,0,0,0.05);
+}
+
+[data-theme="dark"] {
+    --bg-principal: #030712;
+    --bg-card: #090d16;
+    --bg-topbar: #090d16;
+    --bg-input: #0f172a;
+    --texto-escuro: #f3f4f6;
+    --texto-mutado: #94a3b8;
+    --texto-label: #cbd5e1;
+    --borda: #1e293b;
+
+    /* Botão Secundário */
+    --bg-secondary: #1e293b;
+    --texto-secondary: #cbd5e1;
+    --borda-secondary: #334155;
+    --bg-secondary-hover: #334155;
+
+    /* Tabela Headers */
+    --bg-table-header: #1e293b;
+    --texto-table-header: #cbd5e1;
+    --bg-table-row-hover: #131b2e;
+
+    /* Sidebar */
+    --bg-sidebar: #020617;
+    --borda-sidebar: rgba(255, 255, 255, 0.03);
+    
+    /* Sombras Cósmicas Neon */
+    --shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+    --shadow-lg: 0 10px 30px rgba(139, 92, 246, 0.25);
+}
+
+[data-theme="dark"] .badge-success { background-color: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+[data-theme="dark"] .badge-danger { background-color: rgba(244, 63, 94, 0.15); color: #fda4af; }
+[data-theme="dark"] .badge-warning { background-color: rgba(251, 91, 36, 0.15); color: #ffedd5; }
+
+[data-theme="dark"] .badge-role.badge-master { background-color: rgba(139, 92, 246, 0.15); color: #c084fc; }
+[data-theme="dark"] .badge-role.badge-vendedor { background-color: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+[data-theme="dark"] .badge-role.badge-caixa { background-color: rgba(251, 91, 36, 0.15); color: #ffedd5; }
+
+/* Animações e Scrollbars Cockpit */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-principal);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--borda);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--texto-mutado);
+}
+
+@keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.floating-astronaut {
+    animation: float 5s ease-in-out infinite;
+}
+
+/* Efeito Glow para Cards e Modais */
+.card, .modal-card, .table-container {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-theme="dark"] .card:hover, 
+[data-theme="dark"] .table-container:hover {
+    box-shadow: 0 0 25px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+/* ==========================================================================
+   RESET & CONFIGURAÇÕES BÁSICAS
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-principal);
+    color: var(--texto-escuro);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   FORMULÁRIOS & CAMPOS DE ENTRADA
+   ========================================================================== */
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--texto-label);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--borda);
+    background-color: var(--bg-input);
+    color: var(--texto-escuro);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* ==========================================================================
+   BOTÕES E COMPONENTES DE AÇÃO
+   ========================================================================== */
+.btn {
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background-color: var(--sucesso);
+    color: #ffffff;
+}
+
+.btn-success:hover {
+    background-color: var(--sucesso-hover);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background-color: var(--perigo);
+    color: #ffffff;
+}
+
+.btn-danger:hover {
+    background-color: var(--perigo-hover);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--texto-secondary);
+    border: 1px solid var(--borda-secondary);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-secondary-hover);
+}
+
+/* ==========================================================================
+   TABELAS MODERNAS
+   ========================================================================== */
+.table-container {
+    background-color: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--borda);
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 24px;
+    width: 100%;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 800px; /* Garante que a tabela não esmague em telas muito pequenas, forçando scroll horizontal suave */
+}
+
+th {
+    background-color: var(--bg-table-header);
+    color: var(--texto-table-header);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--borda);
+    white-space: nowrap;
+}
+
+td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--borda);
+    color: var(--texto-escuro);
+    font-size: 0.9rem;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background-color: var(--bg-table-row-hover);
+}
+
+/* ==========================================================================
+   CARDS DE LAYOUT & COMPONENTES
+   ========================================================================== */
+.card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--borda);
+    box-shadow: var(--shadow);
+    padding: 24px;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 768px) {
+    .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   BADGES (ETIQUETAS)
+   ========================================================================== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-success { background-color: #ecfdf5; color: #10b981; }
+.badge-danger { background-color: #fef2f2; color: #ef4444; }
+.badge-warning { background-color: #fffbeb; color: #f59e0b; }
+
+/* ==========================================================================
+   MODAL OVERLAY (POPUP)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    background-color: var(--bg-card);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--borda);
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-overlay.active .modal-card {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    background-color: var(--bg-table-header);
+    border-bottom: 1px solid var(--borda);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--texto-escuro);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--texto-mutado);
+    cursor: pointer;
+}
+
+.modal-form {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.modal-footer {
+    grid-column: span 2;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+    border-top: 1px solid var(--borda);
+    padding-top: 20px;
+}

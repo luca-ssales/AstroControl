@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AstroControl</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <script>
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    </script>
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-box-container">
+            
+            <!-- Lado Esquerdo: Ilustração do Astronauta -->
+            <div class="login-graphic-side">
+                <img src="{{ url_for('static', filename='images/astro_walking.png') }}" class="floating-astronaut" alt="Astronaut" style="filter: drop-shadow(0 15px 30px rgba(139, 92, 246, 0.45));">
+                <h1 class="graphic-title">AstroControl</h1>
+                <p class="graphic-subtitle" data-i18n="login-subtitulo-esq">Navegue pelas estrelas da sua gestão comercial</p>
+            </div>
+            
+            <!-- Lado Direito: Formulário -->
+            <div class="login-card-side">
+                
+                <!-- Language and Theme Toggles -->
+                <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 10;">
+                    <button type="button" id="lang-toggle" onclick="toggleLanguage()" style="background: none; border: none; cursor: pointer; color: var(--texto-mutado); font-size: 0.85rem; font-weight: 700; outline: none; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.backgroundColor='var(--bg-secondary)'" onmouseout="this.style.backgroundColor='transparent'">
+                        🌐 EN
+                    </button>
+                    <button type="button" id="theme-toggle" style="background: none; border: none; cursor: pointer; color: var(--texto-mutado); font-size: 1.1rem; outline: none; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.backgroundColor='var(--bg-secondary)'" onmouseout="this.style.backgroundColor='transparent'">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+                </div>
+                
+                <div class="brand-logo">
+                    <img src="{{ url_for('static', filename='favicon.png') }}" style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--primary); box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);" alt="Logo">
+                    <span class="logo-text">AstroControl</span>
+                </div>
+
+                <div class="login-header">
+                    <h2 data-i18n="login-seja-bem-vindo">Seja bem-vindo</h2>
+                    <p data-i18n="login-subtitulo">Insira suas credenciais para acessar o painel</p>
+                </div>
+
+                <!-- FLASH ALERTS -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}" style="margin: 0;">
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" class="login-form">
+                    
+                    <div class="input-group">
+                        <label for="email" data-i18n="th-email">E-mail</label>
+                        <input type="email" id="email" name="email" placeholder="exemplo@loja.com" required autocomplete="email">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="label-wrapper">
+                            <label for="senha" data-i18n="label-senha">Senha</label>
+                            <a href="/esqueci-senha" class="forgot-link" data-i18n="login-esqueceu">Esqueceu a senha?</a>
+                        </div>
+                        <div class="password-container">
+                            <input type="password" id="senha" name="senha" data-i18n-placeholder="ph-senha" placeholder="••••••••" required>
+                            <button type="button" id="togglePassword" class="toggle-password-btn">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" data-i18n="login-entrar">Entrar no sistema</button>
+
+                </form>
+
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        const togglePassword = document.querySelector('#togglePassword');
+        const passwordInput = document.querySelector('#senha');
+
+        togglePassword.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🙈';
+        });
+
+        // Theme Toggle Logic inside Login page
+        const themeToggle = document.getElementById("theme-toggle");
+        const themeIcon = document.getElementById("theme-icon");
+
+        function updateThemeIcon(theme) {
+            if (theme === "dark") {
+                themeIcon.className = "fa-solid fa-sun";
+            } else {
+                themeIcon.className = "fa-solid fa-moon";
+            }
+        }
+
+        const currentTheme = localStorage.getItem("theme") || "light";
+        updateThemeIcon(currentTheme);
+
+        themeToggle.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme") || "light";
+            const target = current === "light" ? "dark" : "light";
+            
+            document.documentElement.setAttribute("data-theme", target);
+            localStorage.setItem("theme", target);
+            updateThemeIcon(target);
+        });
+    </script>
+
+</body>
+</html>

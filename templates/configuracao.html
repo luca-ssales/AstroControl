@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurações da Empresa - AstroControl{% endblock %}
+{% block page_header %}⚙️ <span data-i18n="page-configuracao-title">Configurações da Empresa</span>{% endblock %}
+
+{% block styles %}
+<style>
+    .config-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    
+    @media (max-width: 992px) {
+        .config-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .logo-preview-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        background: #ffffff;
+        text-align: center;
+    }
+
+    .logo-preview {
+        max-width: 100%;
+        max-height: 150px;
+        object-fit: contain;
+        margin-bottom: 12px;
+        border-radius: 8px;
+    }
+
+    .logo-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        margin-bottom: 12px;
+        border: 2px dashed #cbd5e1;
+    }
+
+    .custom-file-upload {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+    }
+
+    .custom-file-upload:hover {
+        background-color: #e2e8f0;
+    }
+
+    .custom-file-upload input[type="file"] {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<form method="POST" enctype="multipart/form-data">
+    <div class="config-grid">
+        
+        <!-- FORMULÁRIO DE CONFIGURAÇÕES -->
+        <div class="card">
+            <h3 style="font-size: 1.10rem; font-weight: 700; margin-bottom: 20px; color: var(--texto-escuro);">
+                <i class="fa-solid fa-building" style="color: var(--primary);"></i> <span data-i18n="config-dados-empresa">Dados Cadastrais da Empresa</span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                
+                <div class="form-group">
+                    <label for="nome" data-i18n="config-fantasia">Nome Fantasia (Loja)</label>
+                    <input type="text" id="nome" name="nome" value="{{ empresa[1] or '' }}" data-i18n-placeholder="config-fantasia" placeholder="Ex: Loja Modelo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="razao_social" data-i18n="config-razao">Razão Social</label>
+                    <input type="text" id="razao_social" name="razao_social" value="{{ empresa[2] or '' }}" data-i18n-placeholder="config-razao" placeholder="Ex: Loja Modelo Ltda">
+                </div>
+                
+                <div class="form-group">
+                    <label for="cnpj" data-i18n="config-cnpj">CNPJ</label>
+                    <input type="text" id="cnpj" name="cnpj" value="{{ empresa[3] or '' }}" data-i18n-placeholder="config-cnpj" placeholder="00.000.000/0001-00">
+                </div>
+                
+                <div class="form-group">
+                    <label for="dominio" data-i18n="config-dominio">Domínio de E-mail da Equipe (@)</label>
+                    <input type="text" id="dominio" name="dominio" value="{{ empresa[6] or '' }}" data-i18n-placeholder="config-dominio" placeholder="ex: lojamodelo.com" required>
+                    <small style="color: var(--texto-mutado);" data-i18n="config-dominio-ajuda">Usado para gerar e-mails automáticos da equipe (ex: lucas@dominio.com)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tel" data-i18n="th-telefone">Telefone / WhatsApp</label>
+                    <input type="text" id="tel" name="tel" value="{{ empresa[4] or '' }}" data-i18n-placeholder="th-telefone" placeholder="(11) 99999-9999">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" data-i18n="th-email">E-mail de Contato</label>
+                    <input type="email" id="email" name="email" value="{{ empresa[5] or '' }}" data-i18n-placeholder="th-email" placeholder="contato@loja.com">
+                </div>
+                
+            </div>
+            
+            <h3 style="font-size: 1.10rem; font-weight: 700; margin-top: 30px; margin-bottom: 20px; color: var(--texto-escuro); border-top: 1px solid var(--borda); padding-top: 20px;">
+                <i class="fa-solid fa-map-location-dot" style="color: var(--primary);"></i> <span data-i18n="config-endereco-loja">Endereço da Empresa</span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                    <label for="endereco_rua" data-i18n="pdv-ph-rua">Rua / Avenida</label>
+                    <input type="text" id="endereco_rua" name="endereco_rua" value="{{ empresa[7] or '' }}" data-i18n-placeholder="pdv-ph-rua" placeholder="Rua das Flores">
+                </div>
+                <div class="form-group">
+                    <label for="endereco_numero" data-i18n="pdv-ph-numero">Número</label>
+                    <input type="text" id="endereco_numero" name="endereco_numero" value="{{ empresa[8] or '' }}" data-i18n-placeholder="pdv-ph-numero" placeholder="123">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                    <label for="endereco_bairro" data-i18n="pdv-ph-bairro">Bairro</label>
+                    <input type="text" id="endereco_bairro" name="endereco_bairro" value="{{ empresa[9] or '' }}" data-i18n-placeholder="pdv-ph-bairro" placeholder="Centro">
+                </div>
+                <div class="form-group">
+                    <label for="endereco_cep" data-i18n="pdv-ph-cep">CEP</label>
+                    <input type="text" id="endereco_cep" name="endereco_cep" value="{{ empresa[10] or '' }}" data-i18n-placeholder="pdv-ph-cep" placeholder="00000-000">
+                </div>
+                <div class="form-group">
+                    <label for="endereco_cidade" data-i18n="config-cidade">Cidade</label>
+                    <input type="text" id="endereco_cidade" name="endereco_cidade" value="{{ empresa[11] or '' }}" data-i18n-placeholder="config-cidade" placeholder="São Paulo">
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 16px;">
+                <label for="endereco_estado" data-i18n="config-estado">Estado (UF)</label>
+                <input type="text" id="endereco_estado" name="endereco_estado" value="{{ empresa[12] or '' }}" data-i18n-placeholder="config-estado" placeholder="SP" style="max-width: 150px;">
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 30px; border-top: 1px solid var(--borda); padding-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn-salvar-config">Salvar Configurações</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- LOGO DA EMPRESA -->
+        <div class="card">
+            <h3 style="font-size: 1.10rem; font-weight: 700; margin-bottom: 20px; color: var(--texto-escuro);">
+                <i class="fa-solid fa-image" style="color: var(--primary);"></i> <span data-i18n="config-logotipo">Logotipo da Loja</span>
+            </h3>
+            
+            <div class="logo-preview-container">
+                {% if empresa[13] %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ empresa[13]) }}" alt="Logo {{ empresa[1] }}" class="logo-preview" id="preview-logo-img">
+                {% else %}
+                    <div class="logo-placeholder" id="preview-logo-placeholder">
+                        <i class="fa-solid fa-shop"></i>
+                    </div>
+                {% endif %}
+                
+                <label for="logo" class="custom-file-upload">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span data-i18n="config-selecionar-logo">Selecionar Logo</span>
+                    <input type="file" id="logo" name="logo" accept="image/*" onchange="previewFile(this)">
+                </label>
+                <div id="logo-file-name" style="margin-top: 8px; font-size: 0.8rem; color: var(--primary); font-weight: 500; display: none;"></div>
+            </div>
+        </div>
+        
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function previewFile(input) {
+        const previewImg = document.getElementById('preview-logo-img');
+        const placeholder = document.getElementById('preview-logo-placeholder');
+        const fileNameDiv = document.getElementById('logo-file-name');
+        
+        if (input.files && input.files[0]) {
+            fileNameDiv.textContent = `Selecionado: ${input.files[0].name}`;
+            fileNameDiv.style.display = 'block';
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (previewImg) {
+                    previewImg.src = e.target.result;
+                } else {
+                    // Se não existia imagem antes, remove o placeholder e cria a tag img
+                    const img = document.createElement("img");
+                    img.id = "preview-logo-img";
+                    img.src = e.target.result;
+                    img.className = "logo-preview";
+                    placeholder.parentNode.insertBefore(img, placeholder);
+                    placeholder.remove();
+                }
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

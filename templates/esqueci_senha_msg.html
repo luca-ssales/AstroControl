@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - AstroControl</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <script>
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+    </script>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-box-container" style="max-width: 500px; min-height: 400px; display: block; border-radius: 24px;">
+            
+            <div class="login-card-side" style="padding: 40px; border-radius: 24px; width: 100%; box-sizing: border-box;">
+                
+                <div class="brand-logo">
+                    <img src="{{ url_for('static', filename='favicon.png') }}" style="width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid var(--primary); box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);" alt="Logo">
+                    <span class="logo-text">AstroControl</span>
+                </div>
+
+                <div class="login-header" style="text-align: center; margin-top: 10px;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(139, 92, 246, 0.1); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto; font-size: 1.8rem;">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <h2>Recuperação de Senha</h2>
+                </div>
+
+                <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--borda); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; font-size: 0.92rem; line-height: 1.6; color: var(--texto-escuro);">
+                    {{ mensagem }}
+                </div>
+                
+                <p style="font-size: 0.8rem; color: var(--texto-mutado); text-align: center; margin-bottom: 20px; line-height: 1.4;">
+                    E-mail solicitado: <span style="font-family: monospace; font-weight: 600; color: var(--primary);">{{ email }}</span>
+                </p>
+
+                <div style="text-align: center;">
+                    <a href="/login" class="btn-submit" style="display: block; text-decoration: none; padding: 12px 20px; margin-top: 0; box-sizing: border-box;">Voltar ao Login</a>
+                </div>
+
+            </div>
+            
+        </div>
+    </div>
+
+</body>
+</html>

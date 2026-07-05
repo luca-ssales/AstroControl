@@ -1,0 +1,71 @@
+Ideias que o sistema precisa ter:
+
+
+1️⃣- Login Inicial 
+    Login
+    senha
+        esqueci senha
+
+2️⃣- Cadastro q o admin vai fazer do usuario:
+    nome
+    email
+    senha ( gera de 1 a 5)
+    cargo ( isso vai definir as funções q ele vai ter acesso no sistema)
+
+Login do colaborador primeira vez, 
+    Login
+    senha: 12345
+        vai pedir pro usuario trocar a senha, ou seja inserir a senha dele e pedi duas confirmações
+        nova senha
+        confirmar senha 
+
+3️⃣- Funções Administrador ( master)
+        1- cadastar colaborador (incluir excluir tb) 
+        2- cadastar produtos (incluir excluir tb) 
+        3- controle do estoque, se o produto esta acabando, aparece uma mensagem avisando  
+        4- registro de vendas
+        5- historico de vendas 
+
+        funções colaborador ( vendedor )
+        1- Cadastro de clientes
+            nome
+            tel
+            cpf
+            email
+        2- Registrar vendas 
+
+        funções colaborador ( caixa )     
+        1- Cadastro de clientes 
+            nome
+            tel
+            cpf
+            email
+        2- Registar vendas ( parte de pag )
+            atentende? se houve, tem comissão de tantos % definido pelo master 
+            cpf ( já puxa todos os dados do cliente do cadastro)
+            e a venda em aberto feita pelo vendedor
+            entrega? se sim 
+                rua, bairro, cep, complemento, numero, nome de quem recebe, tel p contato
+            forma de pag 
+                pix, deb, cred, dinheiro
+            opção de inserir o prod manualmente c codigo de barras ( cadastrado pelo master)
+
+4️⃣- Cadastro de produto
+    nome:
+    sku:
+    marca:
+    descrição:
+    preço:
+    imagens:
+    estoque:
+
+
+5️⃣- Historico de vendas
+    quanto vendeu
+        dia, semana, mes, ano, total
+    quem mais vendeu
+    oq mais vendeu 
+    quando vendeu
+    onde vendeu 
+    oq vendeu 
+    

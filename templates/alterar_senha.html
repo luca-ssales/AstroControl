@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Alterar Senha - AstroControl{% endblock %}
+{% block page_header %}🔐 <span data-i18n="reset-page-header">Alterar Senha Obrigatória</span>{% endblock %}
+
+{% block styles %}
+<style>
+    .password-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .password-wrapper input {
+        padding-right: 45px;
+        width: 100%;
+    }
+    
+    .password-toggle-btn {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        color: var(--texto-mutado);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 40px auto;">
+    <div class="card">
+        <h2 style="margin-bottom: 12px; font-weight: 700; color: var(--texto-escuro);" data-i18n="reset-defina-nova">Defina sua Nova Senha</h2>
+        <p style="color: var(--texto-mutado); font-size: 0.95rem; margin-bottom: 24px;" data-i18n="reset-subtitulo">
+            Este é o seu primeiro acesso com a senha padrão. Por motivos de segurança, você deve definir uma senha pessoal antes de continuar.
+        </p>
+        
+        <form method="POST" id="password-form" onsubmit="return validarSenhas()">
+            <div class="form-group">
+                <label for="senha" data-i18n="reset-nova-senha">Nova Senha</label>
+                <div class="password-wrapper">
+                    <input type="password" id="senha" name="senha" data-i18n-placeholder="reset-ph-nova" placeholder="Insira a nova senha" required minlength="5">
+                    <button type="button" class="password-toggle-btn" onclick="toggleSenha('senha', this)" title="Mostrar/Ocultar Senha">👁️</button>
+                </div>
+            </div>
+            
+            <div class="form-group" style="margin-top: 16px;">
+                <label for="confirmar_senha" data-i18n="reset-confirmar-nova">Confirmar Nova Senha</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirmar_senha" data-i18n-placeholder="reset-ph-confirm" placeholder="Confirme a nova senha" required minlength="5">
+                    <button type="button" class="password-toggle-btn" onclick="toggleSenha('confirmar_senha', this)" title="Mostrar/Ocultar Senha">👁️</button>
+                </div>
+                <small id="erro-senha" style="color: var(--perigo); display: none; font-weight: 500; margin-top: 8px;">
+                    <i class="fa-solid fa-circle-exclamation"></i> <span data-i18n="reset-erro-coincidem">As senhas não coincidem!</span>
+                </small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px; padding: 12px;">
+                <i class="fa-solid fa-key"></i> <span data-i18n="reset-salvar-acessar">Salvar e Acessar o Sistema</span>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleSenha(inputId, button) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            const type = input.getAttribute("type") === "password" ? "text" : "password";
+            input.setAttribute("type", type);
+            button.textContent = type === "password" ? "👁️" : "🙈";
+        }
+    }
+
+    function validarSenhas() {
+        const senha = document.getElementById("senha").value;
+        const confirmar = document.getElementById("confirmar_senha").value;
+        const erroMsg = document.getElementById("erro-senha");
+        
+        if (senha !== confirmar) {
+            erroMsg.style.display = "block";
+            return false;
+        }
+        erroMsg.style.display = "none";
+        return true;
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,704 @@
+{% extends 'base.html' %}
+
+{% block title %}PDV - Caixa - AstroControl{% endblock %}
+{% block page_header %}🖥️ <span data-i18n="page-pdv-title">Ponto de Venda (PDV)</span>{% endblock %}
+
+{% block styles %}
+<style>
+    .pdv-grid {
+        display: grid;
+        grid-template-columns: 2fr 1.2fr;
+        gap: 24px;
+        align-items: start;
+    }
+    
+    @media (max-width: 992px) {
+        .pdv-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .pdv-table th, .pdv-table td {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-remove {
+        color: var(--perigo);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: color 0.2s;
+    }
+    .btn-remove:hover {
+        color: var(--perigo-hover);
+    }
+    
+    .cart-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+    
+    .delivery-fields {
+        display: none;
+        flex-direction: column;
+        gap: 12px;
+        background-color: var(--bg-secondary);
+        padding: 16px;
+        border-radius: var(--radius);
+        border: 1px solid var(--borda);
+        margin-top: 12px;
+    }
+
+    /* Autocomplete Premium styles */
+    .autocomplete-container {
+        position: relative;
+    }
+    
+    .autocomplete-list {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: var(--bg-card);
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 6px 0;
+        backdrop-filter: blur(10px);
+    }
+    
+    .autocomplete-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid var(--borda);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s ease;
+    }
+    
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+    
+    .autocomplete-item:hover {
+        background: rgba(139, 92, 246, 0.15) !important;
+        padding-left: 20px;
+    }
+    
+    .pdv-total-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--bg-secondary);
+        padding: 20px;
+        border-radius: var(--radius);
+        border: 1px solid var(--borda);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- CONTROLES SUPERIORES (IMPORTAR VENDA EM ABERTO) -->
+<div class="card" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <i class="fa-solid fa-cloud-arrow-down" style="font-size: 1.5rem; color: var(--primary);"></i>
+        <div>
+            <h4 style="font-weight: 700; margin: 0; color: var(--texto-escuro);" data-i18n="pdv-vendas-aberto">Vendas em Aberto (Vendedores)</h4>
+            <p style="font-size: 0.8rem; color: var(--texto-mutado); margin: 0;" data-i18n="pdv-selecione-venda">Selecione uma venda iniciada para finalizar o pagamento.</p>
+        </div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <select id="vendas-abertas-select" style="min-width: 250px; padding: 10px;">
+            <option value="" data-i18n="pdv-nenhuma-selecionada">-- Nenhuma venda selecionada --</option>
+        </select>
+        <button type="button" class="btn btn-secondary" onclick="carregarVendaAberta()" style="padding: 10px 16px;">
+            <i class="fa-solid fa-circle-down"></i> <span data-i18n="btn-importar">Importar</span>
+        </button>
+    </div>
+</div>
+
+<div class="pdv-grid">
+    
+    <!-- LADO ESQUERDO: LISTAGEM DE ITENS E ADIÇÃO -->
+    <div class="card" style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <div style="display: flex; align-items: flex-end; gap: 12px; width: 100%;">
+            <div class="form-group autocomplete-container" style="flex: 1; margin-bottom: 0;">
+                <label for="codigo-barras" style="font-weight: 700;" data-i18n="pdv-adicionar-produto">Adicionar Produto (Nome / SKU / Código)</label>
+                <input type="text" id="codigo-barras" data-i18n-placeholder="ph-pesquisar-pdv" 
+                    placeholder="Pesquise por nome, SKU ou código de barras..." 
+                    oninput="buscarSugestoes(this.value)"
+                    onkeypress="verificarEnter(event)"
+                    autocomplete="off">
+                <div id="autocomplete-list" class="autocomplete-list"></div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="adicionarProduto()" style="padding: 13px 20px;">
+                <i class="fa-solid fa-plus"></i> <span data-i18n="btn-inserir">Inserir</span>
+            </button>
+        </div>
+        
+        <div class="table-container" style="margin-top: 0; box-shadow: none; border-radius: var(--radius);">
+            <table class="pdv-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="th-produto">Produto</th>
+                        <th data-i18n="th-sku">Código/SKU</th>
+                        <th style="width: 80px;" class="text-center" data-i18n="th-quantidade">Qtd</th>
+                        <th data-i18n="th-preco">Preço Unit.</th>
+                        <th data-i18n="th-subtotal">Subtotal</th>
+                        <th style="width: 50px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="lista-venda">
+                    <!-- Preenchido via Javascript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pdv-total-box">
+            <span style="font-weight: 700; color: var(--texto-mutado); font-size: 1.1rem;" data-i18n="pdv-total-venda-label">TOTAL DA VENDA</span>
+            <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">0.00</span></span>
+        </div>
+        
+    </div>
+    
+    <!-- LADO DIREITO: FINALIZAÇÃO E DETALHES -->
+    <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 20px; color: var(--texto-escuro);">
+            <i class="fa-solid fa-cash-register" style="color: var(--primary);"></i> <span data-i18n="pdv-fechamento">Fechamento da Venda</span>
+        </h3>
+        
+        <form id="pdv-form" method="POST" action="/finalizar-venda" onsubmit="return finalizarVendaCheckout(event)">
+            
+            <!-- Venda Id para atualizar se for venda importada -->
+            <input type="hidden" id="venda_id" name="venda_id" value="">
+            <input type="hidden" name="status" value="finalizada">
+            
+            <!-- CLIENTE -->
+            <div class="form-group">
+                <label for="cliente_cpf" data-i18n="label-cpf">CPF do Cliente</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="cliente_cpf" name="cliente_cpf" placeholder="000.000.000-00">
+                    <button type="button" class="btn btn-secondary" onclick="buscarClienteCPF()" style="padding: 10px;">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="cliente_nome" data-i18n="label-nome-cliente">Nome do Cliente</label>
+                <input type="text" id="cliente_nome" name="cliente_nome" placeholder="Cliente Consumidor" readonly>
+                <input type="hidden" id="cliente_id" name="cliente_id" value="">
+            </div>
+            
+            <!-- VENDEDOR (Para Comissão) -->
+            <div class="form-group">
+                <label for="vendedor_id" data-i18n="label-atendente">Atendente / Vendedor</label>
+                <select id="vendedor_id" name="vendedor_id">
+                    <option value="" data-i18n="pdv-selecione-atendente">🚫 Nenhum (Auto-Serviço)</option>
+                    {% for v in vendedores %}
+                        <option value="{{ v[0] }}">{{ v[1] }}</option>
+                    {% endfor %}
+                </select>
+                <small style="color: var(--texto-mutado); font-size: 0.78rem;">
+                    Deixe em "Nenhum" se o cliente foi direto ao caixa sem auxílio.
+                </small>
+            </div>
+            
+            <!-- CUPOM DE DESCONTO -->
+            <div class="form-group">
+                <label for="cupom_codigo">Cupom de Desconto</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="cupom_codigo" name="cupom_codigo" placeholder="Digite o cupom (Ex: ASTRO10)" style="text-transform: uppercase;">
+                    <button type="button" class="btn btn-secondary" onclick="aplicarCupomPDV()" style="padding: 10px; white-space: nowrap; font-size: 0.85rem; border-radius: var(--radius);">
+                        <i class="fa-solid fa-tag"></i> Aplicar
+                    </button>
+                </div>
+                <small id="cupom_mensagem" style="display: block; margin-top: 4px; font-size: 0.8rem; font-weight: 600;"></small>
+                <input type="hidden" id="desconto_cupom" name="desconto_cupom" value="0.0">
+            </div>
+
+            <!-- PAGAMENTO -->
+            <div class="form-group">
+                <label for="forma_pagamento" data-i18n="pdv-pagamento">Forma de Pagamento</label>
+                <select id="forma_pagamento" name="forma_pagamento" required>
+                    <option value="Dinheiro" data-i18n="pdv-dinheiro-emoji">Dinheiro 💵</option>
+                    <option value="Pix" data-i18n="pdv-pix-emoji">Pix ⚡</option>
+                    <option value="Cartão Débito" data-i18n="pdv-debito-emoji">Cartão Débito 💳</option>
+                    <option value="Cartão Crédito" data-i18n="pdv-credito-emoji">Cartão Crédito 💳</option>
+                </select>
+            </div>
+            
+            <!-- ENTREGA -->
+            <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-top: 10px;">
+                <input type="checkbox" id="entrega" name="entrega" value="1" onchange="toggleEntrega(this.checked)" style="width: auto;">
+                <label for="entrega" style="margin: 0; cursor: pointer;" data-i18n="pdv-solicitar-entrega">Solicitar Entrega ao Domicílio</label>
+            </div>
+            
+            <!-- CAMPOS DE ENTREGA -->
+            <div class="delivery-fields" id="delivery-fields">
+                <h4 style="font-weight: 700; font-size: 0.9rem; color: var(--texto-escuro); margin-bottom: 6px;" data-i18n="pdv-endereco-entrega">Endereço de Entrega</h4>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                    <input type="text" id="entrega_rua" name="entrega_rua" data-i18n-placeholder="pdv-ph-rua" placeholder="Rua / Avenida">
+                    <input type="text" id="entrega_numero" name="entrega_numero" data-i18n-placeholder="pdv-ph-numero" placeholder="Nº">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="entrega_bairro" name="entrega_bairro" data-i18n-placeholder="pdv-ph-bairro" placeholder="Bairro">
+                    <input type="text" id="entrega_cep" name="entrega_cep" data-i18n-placeholder="pdv-ph-cep" placeholder="CEP">
+                </div>
+                
+                <input type="text" id="entrega_complemento" name="entrega_complemento" data-i18n-placeholder="pdv-ph-complemento" placeholder="Complemento (Ap, bloco, etc.)">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="entrega_recebedor" name="entrega_recebedor" data-i18n-placeholder="pdv-ph-recebedor" placeholder="Nome Recebedor">
+                    <input type="text" id="entrega_telefone" name="entrega_telefone" data-i18n-placeholder="pdv-ph-telefone" placeholder="Telefone Contato">
+                </div>
+            </div>
+            
+            <div id="pdv-hidden-inputs"></div>
+            
+            <button type="submit" class="btn btn-success" style="width: 100%; font-size: 1.1rem; padding: 14px; margin-top: 20px;">
+                <i class="fa-solid fa-circle-check"></i> <span data-i18n="pdv-concluir">Concluir e Registrar Venda</span>
+            </button>
+            
+        </form>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let carrinhoPDV = [];
+
+    // Carregar vendas em aberto no select ao iniciar
+    document.addEventListener("DOMContentLoaded", function() {
+        carregarVendasAbertasLista();
+        
+        // Verifica se há o parâmetro importar_orcamento na URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orcamentoId = urlParams.get('importar_orcamento');
+        if (orcamentoId) {
+            carregarVendaAbertaPorId(orcamentoId);
+        }
+    });
+
+    function carregarVendasAbertasLista() {
+        const select = document.getElementById("vendas-abertas-select");
+        fetch('/vendas-abertas')
+            .then(res => res.json())
+            .then(data => {
+                // Clear existing
+                select.innerHTML = '<option value="">-- Selecione a venda --</option>';
+                data.forEach(venda => {
+                    const opt = document.createElement("option");
+                    opt.value = venda.id;
+                    const rotulo = venda.status === 'orcamento' ? 'Orçamento' : 'Venda';
+                    opt.textContent = `${rotulo} #${venda.id} - ${venda.cliente_nome} (CPF: ${venda.cliente_cpf || 'N/A'}) - Total: R$ ${venda.total.toFixed(2)}`;
+                    select.appendChild(opt);
+                });
+            });
+    }
+
+    function carregarVendaAberta() {
+        const select = document.getElementById("vendas-abertas-select");
+        const vendaId = select.value;
+        if (!vendaId) return;
+        carregarVendaAbertaPorId(vendaId);
+    }
+
+    function carregarVendaAbertaPorId(vendaId) {
+        fetch(`/carregar-venda-aberta/${vendaId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.erro) {
+                    alert(data.erro);
+                    return;
+                }
+                
+                carrinhoPDV = data.itens.map(item => ({
+                    id: item.produto_id,
+                    nome: item.nome_produto,
+                    preco: item.preco_unitario,
+                    quantidade: item.quantidade,
+                    sku: item.sku,
+                    estoque: item.estoque + item.quantidade
+                }));
+                
+                // Preenche dados do cliente
+                document.getElementById("venda_id").value = data.venda_id;
+                document.getElementById("cliente_id").value = data.cliente_id || "";
+                document.getElementById("cliente_cpf").value = data.cliente_cpf || "";
+                document.getElementById("cliente_nome").value = data.cliente_nome || "Consumidor";
+                
+                // Preenche o vendedor
+                if (data.vendedor_id) {
+                    document.getElementById("vendedor_id").value = data.vendedor_id;
+                }
+                
+                renderCarrinhoPDV();
+            });
+    }
+
+    function verificarEnter(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            adicionarProduto();
+        }
+    }
+
+    let searchTimeout = null;
+
+    // Autocomplete: busca sugestoes ao digitar
+    function buscarSugestoes(valor) {
+        clearTimeout(searchTimeout);
+        const lista = document.getElementById('autocomplete-list');
+        if (!valor || valor.length < 2) {
+            lista.style.display = 'none';
+            lista.innerHTML = '';
+            return;
+        }
+        searchTimeout = setTimeout(() => {
+            fetch(`/buscar-produto/${encodeURIComponent(valor)}`)
+                .then(res => res.json())
+                .then(data => {
+                    lista.innerHTML = '';
+                    if (!data || data.length === 0) {
+                        lista.style.display = 'none';
+                        return;
+                    }
+                    data.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'autocomplete-item';
+                        div.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <img src="${p.imagem ? '/static/uploads/' + p.imagem : '/static/favicon.png'}" 
+                                     style="width: 38px; height: 38px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borda);"
+                                     onerror="this.src='/static/favicon.png'">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--texto-escuro);">${p.nome}</div>
+                                    <div style="font-size: 0.78rem; color: var(--texto-mutado);">SKU: ${p.sku || 'N/A'}</div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: var(--primary);">R$ ${p.preco.toFixed(2)}</div>
+                                <div style="font-size: 0.75rem; color: ${p.estoque > 0 ? 'var(--sucesso)' : 'var(--perigo)'}; font-weight: 500;">Estoque: ${p.estoque}</div>
+                            </div>
+                        `;
+                        div.addEventListener('click', () => {
+                            adicionarItemAoCarrinho(p);
+                            document.getElementById('codigo-barras').value = '';
+                            lista.style.display = 'none';
+                            lista.innerHTML = '';
+                        });
+                        lista.appendChild(div);
+                    });
+                    lista.style.display = 'block';
+                });
+        }, 300);
+    }
+
+    // Fecha autocomplete ao clicar fora
+    document.addEventListener('click', function(e) {
+        const lista = document.getElementById('autocomplete-list');
+        if (!lista.contains(e.target) && e.target.id !== 'codigo-barras') {
+            lista.style.display = 'none';
+        }
+    });
+
+    // Adiciona item direto ao carrinho (sem request adicional)
+    function adicionarItemAoCarrinho(data) {
+        if (data.estoque <= 0) {
+            alert('Produto sem estoque disponivel!');
+            return;
+        }
+        const itemExistente = carrinhoPDV.find(item => item.id === data.id);
+        if (itemExistente) {
+            if (itemExistente.quantidade < data.estoque) {
+                itemExistente.quantidade++;
+            } else {
+                alert('Quantidade maxima em estoque atingida!');
+            }
+        } else {
+            carrinhoPDV.push({
+                id: data.id,
+                nome: data.nome,
+                preco: data.preco,
+                quantidade: 1,
+                sku: data.sku,
+                estoque: data.estoque,
+                imagem: data.imagem
+            });
+        }
+        renderCarrinhoPDV();
+    }
+
+    // Busca produto pelo campo (pressionando Enter ou clicando Inserir)
+    function adicionarProduto() {
+        const codigoInput = document.getElementById("codigo-barras");
+        const codigo = codigoInput.value.trim();
+        if (!codigo) return;
+        const lista = document.getElementById('autocomplete-list');
+        lista.style.display = 'none';
+        
+        fetch(`/buscar-produto/${encodeURIComponent(codigo)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    alert('Produto nao encontrado!');
+                    return;
+                }
+                if (data.length === 1) {
+                    adicionarItemAoCarrinho(data[0]);
+                    codigoInput.value = '';
+                } else {
+                    // Mostra sugestoes para o usuario escolher
+                    buscarSugestoes(codigo);
+                }
+            });
+    }
+
+    // Remove do Carrinho
+    function removerDoCarrinhoPDV(id) {
+        carrinhoPDV = carrinhoPDV.filter(item => item.id !== id);
+        renderCarrinhoPDV();
+    }
+
+    // Altera Qtd
+    function alterarQtdPDV(id, novaQtd) {
+        const item = carrinhoPDV.find(item => item.id === id);
+        if (!item) return;
+        
+        const qtd = parseInt(novaQtd);
+        if (isNaN(qtd) || qtd < 1) {
+            item.quantidade = 1;
+        } else if (qtd > item.estoque) {
+            alert(`Estoque máximo disponível: ${item.estoque}`);
+            item.quantidade = item.estoque;
+        } else {
+            item.quantidade = qtd;
+        }
+        renderCarrinhoPDV();
+    }
+
+    let cupomAplicado = null;
+
+    function aplicarCupomPDV() {
+        const codigoInput = document.getElementById("cupom_codigo");
+        const msg = document.getElementById("cupom_mensagem");
+        const descontoInput = document.getElementById("desconto_cupom");
+        
+        const codigo = codigoInput.value.trim().toUpperCase();
+        if (!codigo) {
+            cupomAplicado = null;
+            descontoInput.value = "0.0";
+            msg.style.color = "var(--texto-mutado)";
+            msg.textContent = "";
+            renderCarrinhoPDV();
+            return;
+        }
+
+        fetch('/validar-cupom', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ codigo: codigo })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.valido) {
+                cupomAplicado = {
+                    id: data.id,
+                    codigo: data.codigo,
+                    tipo: data.tipo,
+                    valor: data.valor
+                };
+                msg.style.color = "var(--sucesso)";
+                msg.textContent = data.mensagem;
+            } else {
+                cupomAplicado = null;
+                descontoInput.value = "0.0";
+                msg.style.color = "var(--danger)";
+                msg.textContent = data.mensagem;
+            }
+            renderCarrinhoPDV();
+        });
+    }
+
+    // Renderiza a lista na tela
+    function renderCarrinhoPDV() {
+        const itemsBody = document.getElementById("lista-venda");
+        itemsBody.innerHTML = "";
+        
+        let subtotalVenda = 0;
+        
+        carrinhoPDV.forEach(item => {
+            const subtotal = item.preco * item.quantidade;
+            subtotalVenda += subtotal;
+            
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                    <img src="${item.imagem ? '/static/uploads/' + item.imagem : '/static/favicon.png'}" 
+                         style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borda);"
+                         onerror="this.src='/static/favicon.png'">
+                    <span>${item.nome}</span>
+                </td>
+                <td style="font-family: monospace;">${item.sku || 'N/A'}</td>
+                <td class="text-center">
+                    <input type="number" value="${item.quantidade}" min="1" max="${item.estoque}" 
+                        style="width: 70px; padding: 6px; text-align: center;"
+                        onchange="alterarQtdPDV(${item.id}, this.value)">
+                </td>
+                <td>R$ ${item.preco.toFixed(2)}</td>
+                <td style="font-weight: 600; color: var(--texto-escuro);">R$ ${subtotal.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn-remove" onclick="removerDoCarrinhoPDV(${item.id})">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            `;
+            itemsBody.appendChild(tr);
+        });
+
+        // Calcula desconto do cupom
+        let desconto = 0;
+        if (cupomAplicado && subtotalVenda > 0) {
+            if (cupomAplicado.tipo === "percentual") {
+                desconto = subtotalVenda * (cupomAplicado.valor / 100);
+            } else {
+                desconto = cupomAplicado.valor;
+            }
+            if (desconto > subtotalVenda) {
+                desconto = subtotalVenda;
+            }
+        }
+
+        const totalFinal = subtotalVenda - desconto;
+        
+        // Atualiza inputs ocultos e display
+        document.getElementById("desconto_cupom").value = desconto.toFixed(2);
+        
+        // Renderização dos totais no total box
+        const totalBox = document.querySelector(".pdv-total-box");
+        if (desconto > 0) {
+            totalBox.innerHTML = `
+                <div style="display: flex; flex-direction: column; width: 100%; align-items: flex-end; gap: 4px;">
+                    <div style="font-size: 0.85rem; color: var(--texto-mutado); font-weight: 600;">
+                        SUBTOTAL: R$ ${subtotalVenda.toFixed(2)}
+                    </div>
+                    <div style="font-size: 0.88rem; color: var(--danger); font-weight: 700;">
+                        CUPOM (${cupomAplicado.codigo}): - R$ ${desconto.toFixed(2)}
+                    </div>
+                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--texto-mutado); margin-top: 5px;">
+                        TOTAL DA VENDA
+                    </div>
+                    <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">${totalFinal.toFixed(2)}</span></span>
+                </div>
+            `;
+        } else {
+            totalBox.innerHTML = `
+                <span style="font-weight: 700; color: var(--texto-mutado); font-size: 1.1rem;" data-i18n="pdv-total-venda-label">TOTAL DA VENDA</span>
+                <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">${subtotalVenda.toFixed(2)}</span></span>
+            `;
+        }
+        
+        if (carrinhoPDV.length === 0) {
+            itemsBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--texto-mutado); padding: 30px;">
+                        <i class="fa-solid fa-receipt" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <p>Nenhum produto adicionado à venda.</p>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Busca cliente por CPF para preencher no fechamento
+    function buscarClienteCPF() {
+        const cpf = document.getElementById("cliente_cpf").value;
+        const nomeInput = document.getElementById("cliente_nome");
+        const idInput = document.getElementById("cliente_id");
+        
+        if (!cpf) return;
+        
+        fetch(`/buscar-cliente/${cpf}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.erro) {
+                    alert("Cliente não encontrado!");
+                    nomeInput.value = "Consumidor Não Cadastrado";
+                    idInput.value = "";
+                } else {
+                    nomeInput.value = data.nome;
+                    idInput.value = data.id;
+                }
+            });
+    }
+
+    // Toggle para exibição de campos de entrega
+    function toggleEntrega(checked) {
+        const div = document.getElementById("delivery-fields");
+        if (checked) {
+            div.style.display = "flex";
+            // Torna os inputs obrigatórios se for selecionado entrega
+            document.getElementById("entrega_rua").required = true;
+            document.getElementById("entrega_numero").required = true;
+            document.getElementById("entrega_bairro").required = true;
+            document.getElementById("entrega_cep").required = true;
+            document.getElementById("entrega_recebedor").required = true;
+        } else {
+            div.style.display = "none";
+            document.getElementById("entrega_rua").required = false;
+            document.getElementById("entrega_numero").required = false;
+            document.getElementById("entrega_bairro").required = false;
+            document.getElementById("entrega_cep").required = false;
+            document.getElementById("entrega_recebedor").required = false;
+        }
+    }
+
+    // Finaliza
+    function finalizarVendaCheckout(event) {
+        if (carrinhoPDV.length === 0) {
+            alert("A venda está vazia!");
+            event.preventDefault();
+            return false;
+        }
+
+        // Popula os inputs ocultos para o formulário
+        const container = document.getElementById("pdv-hidden-inputs");
+        container.innerHTML = "";
+        
+        carrinhoPDV.forEach(item => {
+            const inputId = document.createElement("input");
+            inputId.type = "hidden";
+            inputId.name = "produto_id";
+            inputId.value = item.id;
+            container.appendChild(inputId);
+            
+            const inputQtd = document.createElement("input");
+            inputQtd.type = "hidden";
+            inputQtd.name = "quantidade";
+            inputQtd.value = item.quantidade;
+            container.appendChild(inputQtd);
+        });
+        
+        return true;
+    }
+</script>
+{% endblock %}

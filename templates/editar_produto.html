@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Produto - AstroControl{% endblock %}
+{% block page_header %}✏️ <span data-i18n="prod-editar-titulo">Editar Produto</span>{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 24px; color: var(--texto-escuro);">
+            <span data-i18n="prod-alterar-info">Alterar Informações do Produto</span> #{{ produto[0] }}
+        </h3>
+        
+        <form method="POST" enctype="multipart/form-data" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="nome" data-i18n="label-nome-produto">Nome do Produto</label>
+                <input type="text" id="nome" name="nome" value="{{ produto[1] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="sku" data-i18n="label-sku">SKU</label>
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <input type="text" id="sku" name="sku" value="{{ produto[2] }}" required style="flex: 1; margin: 0;">
+                    <button type="button" class="btn btn-secondary" onclick="gerarSKU()" style="padding: 0 16px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; cursor: pointer;" title="Gerar SKU automático" data-i18n="btn-gerar">Gerar</button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="codigo_barras" data-i18n="label-cod-barras">Código de Barras</label>
+                <input type="text" id="codigo_barras" name="codigo_barras" value="{{ produto[3] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="marca" data-i18n="label-marca">Marca</label>
+                <input type="text" id="marca" name="marca" value="{{ produto[4] }}" required>
+            </div>
+            
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="categoria_id">Categoria</label>
+                <select id="categoria_id" name="categoria_id">
+                    <option value="">-- Sem Categoria --</option>
+                    {% for cat in categorias %}
+                        {% if cat[2] %}
+                            <option value="{{ cat[0] }}" {% if produto[10] == cat[0] %}selected{% endif %}>&nbsp;&nbsp;&nbsp;└─ {{ cat[1] }}</option>
+                        {% else %}
+                            <option value="{{ cat[0] }}" {% if produto[10] == cat[0] %}selected{% endif %} style="font-weight: bold; color: var(--primary);">{{ cat[1] }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="preco_custo" data-i18n="label-preco-custo">Preço de Custo (R$)</label>
+                <input type="number" step="0.01" id="preco_custo" name="preco_custo" value="{{ produto[7] }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="preco" data-i18n="label-preco-venda">Preço de Venda (R$)</label>
+                <input type="number" step="0.01" id="preco" name="preco" value="{{ produto[6] }}" required>
+            </div>
+            
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="descricao" data-i18n="label-descricao">Descrição</label>
+                <textarea id="descricao" name="descricao">{{ produto[5] }}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="estoque" data-i18n="label-estoque-atual">Estoque Atual</label>
+                <input type="number" id="estoque" name="estoque" value="{{ produto[8] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="estoque_minimo" data-i18n="label-estoque-min">Estoque Mínimo (Alerta)</label>
+                <input type="number" id="estoque_minimo" name="estoque_minimo" value="{{ produto[9] }}" required>
+            </div>
+
+            <!-- GALERIA DE FOTOS ATUAIS -->
+            <div class="form-group" style="grid-column: span 2; border-top: 1px solid var(--borda); padding-top: 20px; margin-top: 10px;">
+                <label style="font-weight: 600; color: var(--texto-escuro);" data-i18n="prod-galeria-atuais">Galeria de Fotos Atuais (Ângulos do Produto)</label>
+                
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 12px; width: 100%;">
+                    {% for img in imagens %}
+                    <div style="position: relative; padding-top: 100%; border-radius: 8px; border: 1px solid var(--borda); overflow: hidden; background-color: #f8fafc; box-shadow: var(--shadow);">
+                        <img src="{{ url_for('static', filename='uploads/' ~ img[1]) }}" style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover;" alt="Ângulo do produto">
+                        <a href="/deletar-imagem-produto/{{ img[0] }}" onclick="return confirm('Deseja realmente excluir esta imagem do catálogo?')" style="position: absolute; top: 6px; right: 6px; background-color: var(--perigo); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1rem; font-weight: bold; line-height: 1; border: 1px solid white; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15);" title="Excluir imagem">×</a>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if not imagens %}
+                    <div style="grid-column: span 5; text-align: center; color: var(--texto-mutado); padding: 20px; font-weight: 500;">
+                        <span data-i18n="prod-nenhuma-foto">Nenhuma foto cadastrada para este produto.</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- UPLOAD DE NOVAS FOTOS -->
+            <div class="form-group" style="grid-column: span 2; margin-top: 10px;">
+                <label style="font-weight: 600; color: var(--texto-escuro);" data-i18n="prod-adicionar-novas-img">Adicionar Novas Imagens (Máximo acumulado de 10 fotos)</label>
+                <label for="novas_imagens" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 2px dashed var(--borda); border-radius: var(--radius); cursor: pointer; text-align: center; color: var(--texto-mutado); background-color: #fafafa; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-images" style="font-size: 1.8rem; margin-bottom: 8px;"></i>
+                    <span data-i18n="prod-selecionar-fotos">Clique para selecionar novas fotos</span>
+                    <input type="file" id="novas_imagens" name="novas_imagens" accept="image/*" multiple onchange="updateFileName(this)" style="display: none;">
+                </label>
+                <div id="preview-imagens-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; width: 100%;"></div>
+            </div>
+            
+            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; border-top: 1px solid var(--borda); padding-top: 20px;">
+                <a href="/produtos" class="btn btn-secondary" data-i18n="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn-salvar">Salvar Alterações</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Mostra as miniaturas de pré-visualização das novas imagens selecionadas
+    function updateFileName(input) {
+        const container = document.getElementById('preview-imagens-container');
+        if (!container) return;
+        container.innerHTML = ''; // Limpa previews anteriores
+        
+        const imagensAtuaisCount = {{ imagens | length }};
+        
+        if (input.files && input.files.length > 0) {
+            if (imagensAtuaisCount + input.files.length > 10) {
+                alert(`Este produto já possui ${imagensAtuaisCount} imagens. Você pode adicionar no máximo mais ${10 - imagensAtuaisCount} imagens!`);
+                input.value = ''; // Reseta input
+                return;
+            }
+            
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const imgWrapper = document.createElement("div");
+                    imgWrapper.style.position = "relative";
+                    imgWrapper.style.paddingTop = "100%"; // Proporção 1:1 quadrado
+                    imgWrapper.style.borderRadius = "8px";
+                    imgWrapper.style.overflow = "hidden";
+                    imgWrapper.style.border = "1px solid var(--borda)";
+                    imgWrapper.style.boxShadow = "var(--shadow)";
+                    
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.position = "absolute";
+                    img.style.top = "0";
+                    img.style.left = "0";
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "cover";
+                    
+                    imgWrapper.appendChild(img);
+                    container.appendChild(imgWrapper);
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+
+    // Gera um SKU estruturado com base no Nome e na Marca
+    function gerarSKU() {
+        const nomeInput = document.getElementById("nome").value.trim();
+        const marcaInput = document.getElementById("marca").value.trim();
+        
+        let prefixNome = "PROD";
+        let prefixMarca = "GEN";
+        
+        if (nomeInput) {
+            prefixNome = nomeInput.substring(0, 3)
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^A-Z0-9]/g, "");
+            if (prefixNome.length < 3) prefixNome = (prefixNome + "XYZ").substring(0, 3);
+        }
+        
+        if (marcaInput) {
+            prefixMarca = marcaInput.substring(0, 3)
+                .toUpperCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^A-Z0-9]/g, "");
+            if (prefixMarca.length < 3) prefixMarca = (prefixMarca + "XYZ").substring(0, 3);
+        }
+        
+        const randomNum = Math.floor(1000 + Math.random() * 9000); // 4 dígitos
+        const skuGerado = `${prefixNome}-${prefixMarca}-${randomNum}`;
+        
+        const skuInput = document.getElementById("sku");
+        if (skuInput) {
+            skuInput.value = skuGerado;
+        }
+    }
+</script>
+{% endblock %}

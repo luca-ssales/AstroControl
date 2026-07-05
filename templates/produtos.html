@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+
+{% block title %}Produtos - AstroControl{% endblock %}
+{% block page_header %}📦 <span data-i18n="page-produtos-title">Produtos Cadastrados</span>{% endblock %}
+
+{% block styles %}
+<style>
+    .td-img {
+        width: 80px;
+    }
+    
+    .product-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--borda);
+    }
+    
+    .product-thumb-placeholder {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f1f5f9;
+        color: #94a3b8;
+        border-radius: 8px;
+        font-size: 1.25rem;
+    }
+    
+    .actions {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #475569;
+        background-color: #f1f5f9;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-action.edit:hover {
+        background-color: var(--primary);
+        color: #ffffff;
+    }
+    
+    .btn-action.delete:hover {
+        background-color: var(--perigo);
+        color: #ffffff;
+    }
+    
+    /* Image upload custom styles */
+    .custom-file-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        border: 2px dashed var(--borda);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        color: var(--texto-mutado);
+    }
+    
+    .custom-file-upload:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background-color: rgba(99, 102, 241, 0.02);
+    }
+    
+    .custom-file-upload i {
+        font-size: 2rem;
+        margin-bottom: 8px;
+    }
+    
+    .custom-file-upload input[type="file"] {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <select id="filtro-categoria" onchange="filtrarProdutos()" style="padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--borda); background: var(--card); color: var(--texto-escuro); width: 200px; margin: 0;">
+            <option value="">Todas as Categorias</option>
+            {% for cat in categorias %}
+            <option value="{{ cat[1] }}">{{ cat[1] }}</option>
+            {% endfor %}
+        </select>
+        
+        <div style="position: relative; width: 280px;">
+            <input type="text" id="busca-produtos" oninput="filtrarProdutos()" placeholder="Buscar por Nome, SKU ou Barras..." style="padding: 10.5px 14px 10.5px 38px; border-radius: var(--radius); border: 1px solid var(--borda); background: var(--card); color: var(--texto-escuro); margin: 0; width: 100%; box-sizing: border-box;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); pointer-events: none;"></i>
+        </div>
+    </div>
+    {% if session.get('cargo') in ['master', 'admin'] or (session.get('cargo') == 'personalizado' and 'produtos' in (session.get('permissoes') or '')) %}
+        <button id="open-modal-btn" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btn-novo-produto">Novo Produto</span>
+        </button>
+    {% endif %}
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 40px;" class="text-center"><input type="checkbox" id="check-all" style="width: auto; cursor: pointer; transform: scale(1.15);"></th>
+                <th data-i18n="th-imagem">Imagem</th>
+                <th data-i18n="th-id">ID</th>
+                <th data-i18n="th-nome">Nome</th>
+                <th data-i18n="th-sku">SKU</th>
+                <th>Categoria</th>
+                <th data-i18n="th-marca">Marca</th>
+                {% if session.get('cargo') in ['master', 'admin'] %}
+                    <th data-i18n="th-custo">Custo</th>
+                {% endif %}
+                <th data-i18n="th-preco">Preço</th>
+                <th data-i18n="th-estoque">Estoque</th>
+                <th data-i18n="th-status">Status</th>
+                <th>Cadastrado em</th>
+                <th>Por</th>
+                {% if session.get('cargo') in ['master', 'admin'] or (session.get('cargo') == 'personalizado' and 'produtos' in (session.get('permissoes') or '')) %}
+                    <th class="text-center" data-i18n="th-acoes">Ações</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for produto in produtos %}
+            <tr data-categoria="{{ produto[11] or '' }}" data-categoria-pai="{{ produto[14] or '' }}" data-sku="{{ produto[2] | lower }}" data-barras="{{ produto[12] | lower }}" data-nome="{{ produto[1] | lower }}">
+                <td class="text-center" style="width: 40px;">
+                    <input type="checkbox" class="product-check" value="{{ produto[0] }}" style="width: auto; cursor: pointer; transform: scale(1.15);">
+                </td>
+                <td class="td-img">
+                    {% if produto[7] %}
+                        <img src="{{ url_for('static', filename='uploads/' ~ produto[7]) }}" alt="{{ produto[1] }}" class="product-thumb">
+                    {% else %}
+                        <div class="product-thumb-placeholder"><i class="fa-solid fa-image"></i></div>
+                    {% endif %}
+                </td>
+                <td style="font-family: monospace; font-weight: 600; color: var(--texto-mutado);">#{{ produto[0] }}</td>
+                <td style="font-weight: 600;">{{ produto[1] }}</td>
+                <td class="text-muted">{{ produto[2] }}</td>
+                <td>
+                    {% if produto[11] %}
+                    <span style="background: rgba(139,92,246,0.15); color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 600;">{{ produto[11] }}</span>
+                    {% else %}
+                    <span style="color: var(--texto-mutado); font-size: 0.8rem;">—</span>
+                    {% endif %}
+                </td>
+                <td>{{ produto[3] }}</td>
+                {% if session.get('cargo') in ['master', 'admin'] %}
+                    <td style="font-weight: 600; color: var(--texto-mutado);">R$ {{ "%.2f"|format(produto[8]) }}</td>
+                {% endif %}
+                <td style="font-weight: 600; color: var(--texto-escuro);">R$ {{ "%.2f"|format(produto[4]) }}</td>
+                <td style="font-weight: 600;">{{ produto[5] }}</td>
+                <td>
+                    {% if produto[5] <= produto[6] %}
+                        <span class="badge badge-danger"><i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="status-baixo">Baixo</span></span>
+                    {% else %}
+                        <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> <span data-i18n="status-normal">Normal</span></span>
+                    {% endif %}
+                </td>
+                <td style="font-size: 0.78rem; color: var(--texto-mutado); white-space: nowrap;">{{ produto[10] or '—' }}</td>
+                <td style="font-size: 0.78rem; color: var(--texto-mutado);">{{ produto[9] or '—' }}</td>
+                {% if session.get('cargo') in ['master', 'admin'] or (session.get('cargo') == 'personalizado' and 'produtos' in (session.get('permissoes') or '')) %}
+                    <td>
+                        <div class="actions">
+                            <a class="btn-action edit" href="/editar-produto/{{ produto[0] }}" title="Editar"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <a class="btn-action delete" href="/excluir-produto/{{ produto[0] }}" onclick="return confirm('Tem certeza que deseja excluir o produto?')" title="Excluir"><i class="fa-solid fa-trash-can"></i></a>
+                        </div>
+                    </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- PAINEL DE AÇÕES EM MASSA FLUTUANTE (COCKPIT) -->
+<div id="painel-massa" style="
+    display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(9, 13, 22, 0.9); backdrop-filter: blur(14px);
+    border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.25);
+    padding: 16px 28px; z-index: 9999; width: 90%; max-width: 900px;
+    align-items: center; justify-content: space-between; gap: 16px;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+">
+    <div style="display: flex; align-items: center; gap: 12px; color: #ffffff;">
+        <i class="fa-solid fa-square-check" style="font-size: 1.4rem; color: var(--primary);"></i>
+        <div>
+            <span style="font-weight: 700; font-size: 0.95rem; color:#ffffff;"><span id="contador-selecionados">0</span> produtos selecionados</span>
+            <div style="font-size: 0.75rem; color: var(--texto-mutado);">Aplicar alteração em massa</div>
+        </div>
+    </div>
+    
+    <form action="/produtos/acoes-em-massa" method="POST" id="form-massa" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin:0;" onsubmit="return enviarAcaoMassa(event)">
+        <input type="hidden" name="ids" id="ids-massa-input">
+        
+        <!-- SELECT DE AÇÃO -->
+        <select name="acao" id="acao-massa-select" onchange="toggleCamposMassa(this.value)" style="padding: 8px 12px; font-size: 0.85rem; min-width: 140px; border-radius: 10px; background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15); width: auto;" required>
+            <option value="" style="background: #090d16;">-- Selecione Ação --</option>
+            <option value="preco" style="background: #090d16;">💰 Ajustar Preço</option>
+            <option value="estoque" style="background: #090d16;">📦 Ajustar Estoque</option>
+            <option value="excluir" style="background: #090d16;">❌ Excluir Produtos</option>
+        </select>
+        
+        <!-- OPÇÕES DE PREÇO -->
+        <div id="massa-preco-group" style="display: none; align-items: center; gap: 8px;">
+            <select name="operacao_preco" style="padding: 8px 12px; font-size: 0.85rem; border-radius: 10px; background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15); width: auto;">
+                <option value="somar_reais" style="background: #090d16;">Somar R$</option>
+                <option value="subtrair_reais" style="background: #090d16;">Subtrair R$</option>
+                <option value="somar_porcentagem" style="background: #090d16;">Aumentar %</option>
+                <option value="subtrair_porcentagem" style="background: #090d16;">Descontar %</option>
+                <option value="definir_preco" style="background: #090d16;">Definir Fixo</option>
+            </select>
+            <input type="number" name="valor_preco" step="0.01" min="0" placeholder="0.00" style="padding: 8px 12px; font-size: 0.85rem; border-radius: 10px; width: 100px; background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15); margin:0;">
+        </div>
+        
+        <!-- OPÇÕES DE ESTOQUE -->
+        <div id="massa-estoque-group" style="display: none; align-items: center; gap: 8px;">
+            <select name="operacao_estoque" style="padding: 8px 12px; font-size: 0.85rem; border-radius: 10px; background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15); width: auto;">
+                <option value="adicionar_estoque" style="background: #090d16;">Adicionar Qtd</option>
+                <option value="definir_estoque" style="background: #090d16;">Definir Fixo</option>
+            </select>
+            <input type="number" name="valor_estoque" placeholder="Qtd" style="padding: 8px 12px; font-size: 0.85rem; border-radius: 10px; width: 90px; background: rgba(255,255,255,0.08); color: #ffffff; border: 1px solid rgba(255,255,255,0.15); margin:0;">
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="submit" class="btn btn-primary" style="padding: 8px 18px; font-size: 0.85rem; border-radius: 10px; height: 36px; background: var(--primary); margin: 0;">
+                <i class="fa-solid fa-circle-check"></i> Aplicar
+            </button>
+            <button type="button" onclick="cancelarSelecaoMassa()" style="background: none; border: none; color: rgba(255,255,255,0.45); cursor: pointer; font-size: 1.25rem; padding: 0; border-radius: 50%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; height: 36px; width: 36px;" onmouseover="this.style.color='#f87171'; this.style.backgroundColor='rgba(239,68,68,0.1)';" onmouseout="this.style.color='rgba(255,255,255,0.45)'; this.style.backgroundColor='transparent';" title="Limpar seleção e fechar">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { transform: translate(-50%, 100px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+}
+</style>
+
+<!-- Modal include for product registration -->
+{% if session.get('cargo') in ['master', 'admin'] or (session.get('cargo') == 'personalizado' and 'produtos' in (session.get('permissoes') or '')) %}
+    {% include 'cadastrar_produto.html' %}
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const modal = document.getElementById('product-modal');
+    const openModalBtn = document.getElementById('open-modal-btn');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const cancelModalBtn = document.getElementById('cancel-modal-btn');
+
+    if (openModalBtn && modal) {
+        openModalBtn.addEventListener('click', () => { modal.classList.add('active'); });
+        const closeModal = () => modal.classList.remove('active');
+        closeModalBtn.addEventListener('click', closeModal);
+        cancelModalBtn.addEventListener('click', closeModal);
+        window.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    }
+
+    // Filtragem combinada por categoria e campo de busca (Nome, SKU, Barras)
+    function filtrarProdutos() {
+        const catSelect = document.getElementById('filtro-categoria');
+        const buscaInput = document.getElementById('busca-produtos');
+        
+        const categoriaSelecionada = catSelect ? catSelect.value : '';
+        const termoBusca = buscaInput ? buscaInput.value.toLowerCase().trim() : '';
+        
+        const rows = document.querySelectorAll('tbody tr[data-categoria]');
+        rows.forEach(row => {
+            const categoriaRow = row.dataset.categoria || '';
+            const categoriaPaiRow = row.dataset.categoriaPai || '';
+            const skuRow = row.dataset.sku || '';
+            const barrasRow = row.dataset.barras || '';
+            const nomeRow = row.dataset.nome || '';
+            
+            const categoriaBate = !categoriaSelecionada || 
+                                  categoriaRow === categoriaSelecionada || 
+                                  categoriaPaiRow === categoriaSelecionada;
+            const buscaBate = !termoBusca || 
+                              nomeRow.includes(termoBusca) || 
+                              skuRow.includes(termoBusca) || 
+                              barrasRow.includes(termoBusca);
+                              
+            if (categoriaBate && buscaBate) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function updateFileName(input) {
+        const container = document.getElementById('preview-imagens-container');
+        if (!container) return;
+        container.innerHTML = '';
+        if (input.files && input.files.length > 0) {
+            if (input.files.length > 10) {
+                alert("Você pode selecionar no máximo 10 imagens por produto!");
+                input.value = '';
+                return;
+            }
+            for (let i = 0; i < input.files.length; i++) {
+                const file = input.files[i];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgWrapper = document.createElement("div");
+                    imgWrapper.style.cssText = "position:relative;padding-top:100%;border-radius:8px;overflow:hidden;border:1px solid var(--borda);box-shadow:var(--shadow);";
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;";
+                    imgWrapper.appendChild(img);
+                    container.appendChild(imgWrapper);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+
+    function gerarSKU() {
+        const nomeInput = document.getElementById("nome").value.trim();
+        const marcaInput = document.getElementById("marca").value.trim();
+        let prefixNome = "PROD", prefixMarca = "GEN";
+        if (nomeInput) { prefixNome = nomeInput.substring(0,3).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]/g,""); if(prefixNome.length<3)prefixNome=(prefixNome+"XYZ").substring(0,3); }
+        if (marcaInput) { prefixMarca = marcaInput.substring(0,3).toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]/g,""); if(prefixMarca.length<3)prefixMarca=(prefixMarca+"XYZ").substring(0,3); }
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        const skuInput = document.getElementById("sku");
+        if (skuInput) skuInput.value = `${prefixNome}-${prefixMarca}-${randomNum}`;
+    }
+
+    // Lógica para Ações em Massa (Cockpit Flutuante)
+    const checkAll = document.getElementById('check-all');
+    if (checkAll) {
+        checkAll.addEventListener('change', function() {
+            const rows = document.querySelectorAll('tbody tr[data-categoria]');
+            rows.forEach(row => {
+                // Seleciona ou desmarca apenas os produtos visíveis no filtro atual
+                if (row.style.display !== 'none') {
+                    const chk = row.querySelector('.product-check');
+                    if (chk) chk.checked = checkAll.checked;
+                }
+            });
+            atualizarPainelMassa();
+        });
+    }
+
+    // Vincular alteração de checkbox individual
+    document.querySelectorAll('.product-check').forEach(chk => {
+        chk.addEventListener('change', atualizarPainelMassa);
+    });
+
+    function atualizarPainelMassa() {
+        const checked = document.querySelectorAll('.product-check:checked');
+        const painel = document.getElementById('painel-massa');
+        const contador = document.getElementById('contador-selecionados');
+        
+        if (checked.length > 0) {
+            contador.textContent = checked.length;
+            painel.style.display = 'flex';
+        } else {
+            painel.style.display = 'none';
+            if (checkAll) checkAll.checked = false;
+        }
+    }
+
+    function toggleCamposMassa(acao) {
+        const precoGroup = document.getElementById('massa-preco-group');
+        const estoqueGroup = document.getElementById('massa-estoque-group');
+        
+        precoGroup.style.display = 'none';
+        estoqueGroup.style.display = 'none';
+        
+        // Remove 'required' de todos antes de ativar
+        precoGroup.querySelector('input').required = false;
+        estoqueGroup.querySelector('input').required = false;
+        
+        if (acao === 'preco') {
+            precoGroup.style.display = 'flex';
+            precoGroup.querySelector('input').required = true;
+        } else if (acao === 'estoque') {
+            estoqueGroup.style.display = 'flex';
+            estoqueGroup.querySelector('input').required = true;
+        }
+    }
+
+    function enviarAcaoMassa(e) {
+        const acao = document.getElementById('acao-massa-select').value;
+        const checked = document.querySelectorAll('.product-check:checked');
+        
+        if (!acao) {
+            alert('Selecione uma ação antes de aplicar!');
+            e.preventDefault();
+            return false;
+        }
+        
+        const ids = Array.from(checked).map(chk => chk.value).join(',');
+        document.getElementById('ids-massa-input').value = ids;
+        
+        if (acao === 'excluir') {
+            const confirmacao = confirm(`Você deseja excluir permanentemente do catálogo os ${checked.length} produto(s) selecionado(s)?`);
+            if (!confirmacao) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        return true;
+     }
+
+    function cancelarSelecaoMassa() {
+        document.querySelectorAll('.product-check').forEach(chk => {
+            chk.checked = false;
+        });
+        if (checkAll) checkAll.checked = false;
+        atualizarPainelMassa();
+    }
+</script>
+{% endblock %}

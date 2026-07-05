@@ -1,0 +1,101 @@
+<div id="product-modal" class="modal-overlay">
+    <div class="modal-card">
+        
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-circle-plus"></i> <span data-i18n="prod-cadastrar-novo">Cadastrar Novo Produto</span></h2>
+            <button type="button" class="btn-close-modal" id="close-modal-btn">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form action="/cadastrar-produto" method="POST" enctype="multipart/form-data" class="modal-form">
+            
+            <div class="form-group">
+                <label for="nome" data-i18n="label-nome-produto">Nome do Produto</label>
+                <input type="text" id="nome" name="nome" data-i18n-placeholder="ph-prod-nome" placeholder="Ex: Camiseta Nike Air" required>
+            </div>
+
+            <div class="form-group">
+                <label for="sku" data-i18n="label-sku">SKU</label>
+                <div style="display: flex; gap: 8px; width: 100%;">
+                    <input type="text" id="sku" name="sku" data-i18n-placeholder="ph-prod-sku" placeholder="Ex: CAM-NK-01" required style="flex: 1; margin: 0;">
+                    <button type="button" class="btn btn-secondary" onclick="gerarSKU()" style="padding: 0 16px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; cursor: pointer;" title="Gerar SKU automático" data-i18n="btn-gerar">Gerar</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="codigo_barras" data-i18n="label-cod-barras">Código de Barras</label>
+                <input type="text" id="codigo_barras" name="codigo_barras" placeholder="7891234567890" required>
+            </div>
+
+            <div class="form-group">
+                <label for="marca" data-i18n="label-marca">Marca</label>
+                <input type="text" id="marca" name="marca" data-i18n-placeholder="ph-prod-marca" placeholder="Ex: Nike" required>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="descricao" data-i18n="label-descricao">Descrição</label>
+                <textarea id="descricao" name="descricao" data-i18n-placeholder="ph-prod-desc" placeholder="Breve descrição sobre as características do produto..."></textarea>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="categoria_id">Categoria</label>
+                <select id="categoria_id" name="categoria_id">
+                    <option value="">-- Sem Categoria --</option>
+                    {% for cat in categorias %}
+                        {% if cat[2] %}
+                            <option value="{{ cat[0] }}">&nbsp;&nbsp;&nbsp;└─ {{ cat[1] }}</option>
+                        {% else %}
+                            <option value="{{ cat[0] }}" style="font-weight: bold; color: var(--primary);">{{ cat[1] }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="preco_custo" data-i18n="label-preco-custo">Preço de Custo</label>
+                <div class="input-prefix-wrapper">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="preco_custo" step="0.01" name="preco_custo" placeholder="0,00" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="preco" data-i18n="label-preco-venda">Preço de Venda</label>
+                <div class="input-prefix-wrapper">
+                    <span class="input-prefix">R$</span>
+                    <input type="number" id="preco" step="0.01" name="preco" placeholder="0,00" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="estoque" data-i18n="label-estoque-atual">Estoque Inicial</label>
+                <input type="number" id="estoque" name="estoque" placeholder="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="estoque_minimo" data-i18n="label-estoque-min">Estoque Mínimo (Alerta)</label>
+                <input type="number" id="estoque_minimo" name="estoque_minimo" data-i18n-placeholder="ph-prod-estoque-min" placeholder="Ex: 5" required>
+            </div>
+
+            <div class="form-group full-width">
+                <label data-i18n="label-imagens">Imagens do Produto (Selecione até 10 imagens)</label>
+                <label for="imagem" class="custom-file-upload">
+                    <i class="fa-solid fa-images"></i>
+                    <span data-i18n="label-upload-instrucao">Clique para selecionar imagens (vários ângulos)</span>
+                    <input type="file" id="imagem" name="imagens" accept="image/*" multiple onchange="updateFileName(this)">
+                </label>
+                <div id="preview-imagens-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; width: 100%;"></div>
+            </div>
+
+            <div class="modal-footer full-width">
+                <button type="button" class="btn-secondary" id="cancel-modal-btn" data-i18n="btn-cancelar">Cancelar</button>
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn-salvar-produto">Salvar Produto</span>
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+</div>

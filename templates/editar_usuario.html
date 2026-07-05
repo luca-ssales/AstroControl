@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Colaborador - AstroControl{% endblock %}
+{% block page_header %}✏️ <span data-i18n="colab-editar-titulo">Editar Colaborador</span>{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 24px; color: var(--texto-escuro);">
+            <span data-i18n="colab-alterar-cadastro">Alterar Cadastro do Colaborador</span> #{{ usuario[0] }}
+        </h3>
+        
+        <form method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group">
+                <label for="nome" data-i18n="label-nome">Nome Completo</label>
+                <input type="text" id="nome" name="nome" value="{{ usuario[1] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" data-i18n="label-email-acesso">E-mail de Acesso</label>
+                <input type="email" id="email" name="email" value="{{ usuario[2] }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="cargo" data-i18n="label-cargo">Cargo / Função</label>
+                <select id="cargo" name="cargo" onchange="toggleCargoOpcoes(this.value)">
+                    <option value="vendedor" {% if usuario[3] == 'vendedor' %}selected{% endif %} data-i18n="cargo-vendedor">Vendedor</option>
+                    <option value="caixa" {% if usuario[3] == 'caixa' %}selected{% endif %} data-i18n="cargo-caixa">Caixa</option>
+                    <option value="admin" {% if usuario[3] == 'admin' %}selected{% endif %}>Admin</option>
+                    <option value="master" {% if usuario[3] == 'master' %}selected{% endif %} data-i18n="cargo-master">Administrador (Master)</option>
+                    <option value="personalizado" {% if usuario[3] == 'personalizado' %}selected{% endif %}>🔧 Personalizado</option>
+                </select>
+            </div>
+
+            <!-- PAINEL DE PERMISSOES PERSONALIZADAS -->
+            <div class="form-group" id="permissoes-group" style="display: {% if usuario[3] == 'personalizado' %}flex{% else %}none{% endif %}; flex-direction: column;">
+                <label style="font-weight: 700; margin-bottom: 10px; display: block;">Permissões de Acesso</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.25); border-radius: var(--radius); padding: 16px;">
+                    {% for chave, label in modulos.items() %}
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500;">
+                        <input type="checkbox" name="permissoes" value="{{ chave }}"
+                               {% if chave in permissoes_usuario %}checked{% endif %}
+                               style="width: auto; accent-color: var(--primary);">
+                        {{ label }}
+                    </label>
+                    {% endfor %}
+                </div>
+                <small style="color: var(--texto-mutado);">Selecione os módulos que este colaborador poderá acessar.</small>
+            </div>
+            
+            <div class="form-group" id="comissao-group">
+                <label for="comissao_percentual" data-i18n="th-comissao">Comissão (%)</label>
+                <input type="number" id="comissao_percentual" name="comissao_percentual" step="0.1" value="{{ usuario[4] | default(0.0) }}" min="0" max="100">
+                <small style="color: var(--texto-mutado);" data-i18n="colab-comissao-ajuda">Percentual de comissão sobre vendas realizadas.</small>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; border-top: 1px solid var(--borda); padding-top: 20px;">
+                <a href="/usuarios" class="btn btn-secondary" data-i18n="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn-salvar">Salvar Alterações</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleCargoOpcoes(cargo) {
+        const comissaoGroup = document.getElementById("comissao-group");
+        const permissoesGroup = document.getElementById("permissoes-group");
+        if (cargo === "vendedor") {
+            comissaoGroup.style.display = "flex";
+        } else {
+            comissaoGroup.style.display = "none";
+            document.getElementById("comissao_percentual").value = "0.0";
+        }
+        if (cargo === "personalizado") {
+            permissoesGroup.style.display = "flex";
+            permissoesGroup.style.flexDirection = "column";
+        } else {
+            permissoesGroup.style.display = "none";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        toggleCargoOpcoes(document.getElementById("cargo").value);
+    });
+</script>
+{% endblock %}

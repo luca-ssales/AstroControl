@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+
+{% block title %}Vendas - AstroControl{% endblock %}
+{% block page_header %}💰 <span data-i18n="page-registrar-venda">Registrar Venda</span>{% endblock %}
+
+{% block styles %}
+<style>
+    .cart-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        align-items: start;
+    }
+    
+    @media (max-width: 992px) {
+        .cart-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .cart-table th, .cart-table td {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-remove {
+        color: var(--perigo);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    
+    .search-results {
+        position: absolute;
+        width: 100%;
+        background: #ffffff;
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        display: none;
+    }
+    
+    .search-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .search-item:hover {
+        background-color: #f8fafc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<form id="venda-form" method="POST" action="/finalizar-venda" onsubmit="return enviarVenda(event)">
+    <div class="cart-grid">
+        
+        <!-- COLUNA ESQUERDA: CLIENTE & DETALHES -->
+        <div class="card">
+            <h3 style="font-size: 1.10rem; font-weight: 700; margin-bottom: 20px; color: var(--texto-escuro);">
+                <i class="fa-solid fa-user-tag" style="color: var(--primary);"></i> <span data-i18n="pdv-cliente-info">Informações do Cliente</span>
+            </h3>
+            
+            <div class="form-group">
+                <label for="cliente_cpf" data-i18n="label-cpf">CPF do Cliente</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="cliente_cpf" name="cliente_cpf" placeholder="000.000.000-00" required>
+                    <button type="button" class="btn btn-secondary" onclick="buscarCliente()" style="padding: 10px 14px;">
+                        <i class="fa-solid fa-magnifying-glass"></i> <span data-i18n="btn-buscar">Buscar</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="cliente_nome" data-i18n="label-nome-cliente">Nome do Cliente</label>
+                <input type="text" id="cliente_nome" name="cliente_nome" data-i18n-placeholder="label-nome-cliente" placeholder="Nome do cliente (autocompletado)" required readonly>
+                <input type="hidden" id="cliente_id" name="cliente_id" value="">
+                <small id="cliente-aviso" style="display: none; color: var(--alerta); font-weight: 500;">
+                    <i class="fa-solid fa-circle-exclamation"></i> <span data-i18n="pdv-cliente-nao-cadastrado">Cliente não cadastrado.</span> <a href="/clientes" target="_blank" style="color: var(--primary); text-decoration: underline;" data-i18n="pdv-cadastrar-cliente">Cadastrar novo cliente</a>
+                </small>
+            </div>
+            
+            <!-- COMO ESTAMOS NA TELA DO VENDEDOR, SALVAMOS COMO ABERTA POR PADRÃO -->
+            <input type="hidden" id="status" name="status" value="aberta">
+            
+            <div style="margin-top: 30px; border-top: 1px solid var(--borda); padding-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                <button type="submit" onclick="definirStatusVenda('aberta')" class="btn btn-primary" style="width: 100%; font-size: 0.95rem; padding: 12px;">
+                    <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn-salvar-venda-caixa">Salvar Venda (Enviar ao Caixa)</span>
+                </button>
+                <button type="submit" onclick="definirStatusVenda('orcamento')" class="btn btn-secondary" style="width: 100%; font-size: 0.95rem; padding: 12px; background-color: rgba(139,92,246,0.1); color: var(--primary); border: 1px solid rgba(139,92,246,0.2); cursor: pointer;">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> Salvar como Orçamento
+                </button>
+            </div>
+        </div>
+        
+        <!-- COLUNA DIREITA: ITENS DO CARRINHO -->
+        <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
+            <h3 style="font-size: 1.10rem; font-weight: 700; color: var(--texto-escuro);">
+                <i class="fa-solid fa-basket-shopping" style="color: var(--primary);"></i> <span data-i18n="pdv-itens-venda">Itens da Venda</span>
+            </h3>
+            
+            <!-- Busca de Produtos -->
+            <div class="form-group" style="position: relative; margin-bottom: 0;">
+                <label for="busca-produto" data-i18n="pdv-buscar-produto-label">Buscar Produto (Nome, SKU ou Código)</label>
+                <input type="text" id="busca-produto" data-i18n-placeholder="ph-pesquisar-geral" placeholder="Digite para buscar..." autocomplete="off">
+                <div id="search-results" class="search-results"></div>
+            </div>
+            
+            <!-- Tabela de Itens Selecionados -->
+            <div class="table-container" style="margin-top: 0; box-shadow: none;">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th style="width: 80px;" class="text-center">Qtd</th>
+                            <th>Unitário</th>
+                            <th>Subtotal</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items">
+                        <!-- Gerado dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; background-color: #f8fafc; padding: 16px 20px; border-radius: var(--radius); border: 1px solid var(--borda);">
+                <span style="font-weight: 600; color: var(--texto-mutado); font-size: 1rem;" data-i18n="pdv-total-venda-label">Total da Venda</span>
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">R$ <span id="venda-total">0.00</span></span>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Inputs ocultos para os itens do carrinho -->
+    <div id="hidden-cart-inputs"></div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let carrinho = [];
+    let produtos = [];
+
+    // Carrega a lista de produtos ao iniciar a página
+    document.addEventListener("DOMContentLoaded", function() {
+        // Vamos expor uma API simples no back-end para listar produtos disponíveis
+        fetch('/buscar-produto/*')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data)) {
+                    produtos = data;
+                }
+            });
+            
+        // Evento de digitação na busca de produtos
+        const buscaInput = document.getElementById("busca-produto");
+        const resultsDiv = document.getElementById("search-results");
+        
+        buscaInput.addEventListener("input", function() {
+            const query = this.value.toLowerCase().trim();
+            if (query.length < 2) {
+                resultsDiv.style.display = "none";
+                return;
+            }
+            
+            const filtrados = produtos.filter(p => 
+                p.nome.toLowerCase().includes(query) || 
+                p.sku.toLowerCase().includes(query) || 
+                p.codigo_barras.toLowerCase().includes(query)
+            );
+            
+            if (filtrados.length > 0) {
+                resultsDiv.innerHTML = "";
+                filtrados.forEach(p => {
+                    const div = document.createElement("div");
+                    div.className = "search-item";
+                    div.style.cssText = "display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;border-bottom:1px solid #f1f5f9;";
+                    div.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <img src="${p.imagem ? '/static/uploads/' + p.imagem : '/static/favicon.png'}" 
+                                 style="width:36px;height:36px;border-radius:6px;object-fit:cover;border:1px solid var(--borda);"
+                                 onerror="this.src='/static/favicon.png'">
+                            <span><strong>${p.nome}</strong> (${p.sku})</span>
+                        </div>
+                        <span style="color: var(--primary); font-weight: 600;">R$ ${p.preco.toFixed(2)}</span>
+                    `;
+                    div.onclick = function() {
+                        adicionarAoCarrinho(p);
+                        buscaInput.value = "";
+                        resultsDiv.style.display = "none";
+                    };
+                    resultsDiv.appendChild(div);
+                });
+                resultsDiv.style.display = "block";
+            } else {
+                resultsDiv.style.display = "none";
+            }
+        });
+        
+        // Fecha resultados se clicar fora
+        document.addEventListener("click", function(e) {
+            if (e.target !== buscaInput && e.target !== resultsDiv) {
+                resultsDiv.style.display = "none";
+            }
+        });
+    });
+
+    // Busca cliente por CPF
+    function buscarCliente() {
+        const cpf = document.getElementById("cliente_cpf").value;
+        const nomeInput = document.getElementById("cliente_nome");
+        const idInput = document.getElementById("cliente_id");
+        const aviso = document.getElementById("cliente-aviso");
+        
+        if (!cpf) return;
+        
+        fetch(`/buscar-cliente/${cpf}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.erro) {
+                    nomeInput.value = "";
+                    idInput.value = "";
+                    nomeInput.removeAttribute("readonly");
+                    aviso.style.display = "block";
+                } else {
+                    nomeInput.value = data.nome;
+                    idInput.value = data.id;
+                    nomeInput.setAttribute("readonly", "readonly");
+                    aviso.style.display = "none";
+                }
+            });
+    }
+
+    // Adiciona produto ao carrinho
+    function adicionarAoCarrinho(produto) {
+        const itemExistente = carrinho.find(item => item.id === produto.id);
+        if (itemExistente) {
+            if (itemExistente.quantidade < produto.estoque) {
+                itemExistente.quantidade++;
+            } else {
+                alert("Quantidade máxima em estoque atingida!");
+            }
+        } else {
+            if (produto.estoque > 0) {
+                carrinho.push({
+                    id: produto.id,
+                    nome: produto.nome,
+                    preco: produto.preco,
+                    quantidade: 1,
+                    estoque: produto.estoque,
+                    imagem: produto.imagem
+                });
+            } else {
+                alert("Produto sem estoque disponível!");
+            }
+        }
+        renderCarrinho();
+    }
+
+    // Altera quantidade de itens no carrinho
+    function alterarQuantidade(id, novaQtd) {
+        const item = carrinho.find(item => item.id === id);
+        if (!item) return;
+        
+        const qtd = parseInt(novaQtd);
+        if (isNaN(qtd) || qtd < 1) {
+            item.quantidade = 1;
+        } else if (qtd > item.estoque) {
+            alert(`Estoque máximo disponível: ${item.estoque}`);
+            item.quantidade = item.estoque;
+        } else {
+            item.quantidade = qtd;
+        }
+        renderCarrinho();
+    }
+
+    // Remove item do carrinho
+    function removerDoCarrinho(id) {
+        carrinho = carrinho.filter(item => item.id !== id);
+        renderCarrinho();
+    }
+
+    // Renderiza a tabela do carrinho
+    function renderCarrinho() {
+        const itemsBody = document.getElementById("cart-items");
+        itemsBody.innerHTML = "";
+        
+        let total = 0;
+        
+        carrinho.forEach(item => {
+            const subtotal = item.preco * item.quantidade;
+            total += subtotal;
+            
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td style="font-weight: 600; display: flex; align-items: center; gap: 10px;">
+                    <img src="${item.imagem ? '/static/uploads/' + item.imagem : '/static/favicon.png'}" 
+                         style="width: 32px; height: 32px; border-radius: 6px; object-fit: cover; border: 1px solid var(--borda);"
+                         onerror="this.src='/static/favicon.png'">
+                    <span>${item.nome}</span>
+                </td>
+                <td>
+                    <input type="number" value="${item.quantidade}" min="1" max="${item.estoque}" 
+                        style="width: 70px; padding: 6px; text-align: center;"
+                        onchange="alterarQuantidade(${item.id}, this.value)">
+                </td>
+                <td>R$ ${item.preco.toFixed(2)}</td>
+                <td style="font-weight: 600; color: var(--texto-escuro);">R$ ${subtotal.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn-remove" onclick="removerDoCarrinho(${item.id})">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </td>
+            `;
+            itemsBody.appendChild(tr);
+        });
+        
+        document.getElementById("venda-total").innerText = total.toFixed(2);
+        
+        if (carrinho.length === 0) {
+            itemsBody.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--texto-mutado); padding: 30px;">
+                        <i class="fa-solid fa-basket-shopping" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <p>Nenhum produto adicionado ao carrinho.</p>
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    // Envia venda ao back-end
+    function enviarVenda(event) {
+        if (carrinho.length === 0) {
+            alert("Adicione pelo menos um produto ao carrinho!");
+            event.preventDefault();
+            return false;
+        }
+        
+        const clienteId = document.getElementById("cliente_id").value;
+        if (!clienteId) {
+            alert("Por favor, selecione ou digite o CPF de um cliente cadastrado!");
+            event.preventDefault();
+            return false;
+        }
+
+        // Popula os inputs ocultos para envio no form
+        const hiddenContainer = document.getElementById("hidden-cart-inputs");
+        hiddenContainer.innerHTML = "";
+        
+        carrinho.forEach(item => {
+            // Cria um input oculto para o ID do produto
+            const inputId = document.createElement("input");
+            inputId.type = "hidden";
+            inputId.name = "produto_id";
+            inputId.value = item.id;
+            hiddenContainer.appendChild(inputId);
+            
+            // Cria um input oculto para a quantidade do produto correspondente
+            const inputQtd = document.createElement("input");
+            inputQtd.type = "hidden";
+            inputQtd.name = "quantidade";
+            inputQtd.value = item.quantidade;
+            hiddenContainer.appendChild(inputQtd);
+        });
+        
+        return true;
+    }
+
+    function definirStatusVenda(val) {
+        document.getElementById("status").value = val;
+    }
+</script>
+{% endblock %}

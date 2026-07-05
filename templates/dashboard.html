@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AstroControl{% endblock %}
+{% block page_header %}📊 <span data-i18n="page-dashboard-title">Visão Geral</span>{% endblock %}
+
+{% block styles %}
+<style>
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .card-metric {
+        background-color: var(--bg-card);
+        border: 1px solid var(--borda);
+        border-radius: var(--radius);
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .card-metric:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .metric-info h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--texto-mutado);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+    
+    .metric-info .value {
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: var(--texto-escuro);
+        margin: 0;
+    }
+    
+    .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+    }
+    
+    .icon-blue { background-color: #eef2ff; color: #6366f1; }
+    .icon-orange { background-color: #fffbeb; color: #f59e0b; }
+    .icon-green { background-color: #ecfdf5; color: #10b981; }
+    .icon-purple { background-color: #faf5ff; color: #a855f7; }
+    
+    .value.alert-text {
+        color: var(--perigo);
+    }
+    
+    .dashboard-sections {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+    }
+    
+    @media (max-width: 992px) {
+        .dashboard-sections {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="metrics-grid">
+    
+    <!-- CARD 1: Total de Produtos -->
+    <div class="card-metric">
+        <div class="metric-info">
+            <h3 data-i18n="card-produtos-cadastrados">Total de Produtos</h3>
+            <p class="value">{{ total_produtos }}</p>
+        </div>
+        <div class="metric-icon icon-blue">
+            <i class="fa-solid fa-boxes-stacked"></i>
+        </div>
+    </div>
+    
+    <!-- CARD 2: Estoque Baixo -->
+    <div class="card-metric">
+        <div class="metric-info">
+            <h3 data-i18n="card-estoque-baixo">Estoque Baixo</h3>
+            <p class="value {% if estoque_baixo > 0 %}alert-text{% endif %}">{{ estoque_baixo }}</p>
+        </div>
+        <div class="metric-icon icon-orange">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+    </div>
+    
+    {% if session.get('cargo') == 'master' %}
+    <!-- CARD 3: Valor em Estoque -->
+    <div class="card-metric">
+        <div class="metric-info">
+            <h3 data-i18n="card-valor-estoque">Valor em Estoque</h3>
+            <p class="value">R$ {{ "%.2f"|format(valor_estoque) }}</p>
+        </div>
+        <div class="metric-icon icon-green">
+            <i class="fa-solid fa-dollar-sign"></i>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- CARD 4: Vendas Recentes -->
+    <div class="card-metric">
+        <div class="metric-info">
+            <h3 data-i18n="card-vendas-realizadas">Vendas Realizadas</h3>
+            <p class="value">{{ total_vendas | default(0) }}</p>
+        </div>
+        <div class="metric-icon icon-purple">
+            <i class="fa-solid fa-cart-check"></i>
+        </div>
+    </div>
+    
+</div>
+
+<div class="dashboard-sections">
+    
+    <!-- Seção de Alertas de Estoque Mínimo -->
+    <div class="card">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--texto-escuro); display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color: var(--alerta);"></i> <span data-i18n="dash-produtos-limite">Produtos Próximos do Limite</span>
+        </h3>
+        
+        {% if produtos_estoque_baixo %}
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; font-size: 0.9rem;">
+                    <thead>
+                        <tr>
+                            <th data-i18n="th-produto">Produto</th>
+                            <th data-i18n="th-sku">SKU</th>
+                            <th class="text-center" data-i18n="th-estoque">Estoque Atual</th>
+                            <th class="text-center" data-i18n="th-minimo">Mínimo Permitido</th>
+                            <th class="text-center" data-i18n="th-acoes">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in produtos_estoque_baixo %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ p[1] }}</td>
+                            <td class="text-muted">{{ p[2] }}</td>
+                            <td class="text-center" style="font-weight: 700; color: var(--perigo);">{{ p[5] }}</td>
+                            <td class="text-center">{{ p[6] }}</td>
+                            <td class="text-center">
+                                <a href="/editar-produto/{{ p[0] }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">
+                                    <i class="fa-solid fa-plus-minus"></i> <span data-i18n="btn-ajustar">Ajustar</span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 30px; color: var(--texto-mutado);">
+                <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: var(--sucesso); margin-bottom: 10px;"></i>
+                <p style="font-weight: 500;" data-i18n="dash-estoque-ok">Excelente! Todos os produtos possuem estoque acima do mínimo.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Seção de Ações Rápidas -->
+    <div class="card">
+        <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--texto-escuro);" data-i18n="dash-acesso-rapido">Acesso Rápido</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="/vendas" class="btn btn-primary" style="width: 100%; justify-content: flex-start;">
+                <i class="fa-solid fa-cart-shopping"></i> <span data-i18n="btn-registrar-venda">Registrar Venda</span>
+            </a>
+            
+            {% if session.get('cargo') in ['master', 'caixa'] %}
+                <a href="/pdv" class="btn btn-success" style="width: 100%; justify-content: flex-start;">
+                    <i class="fa-solid fa-receipt"></i> <span data-i18n="menu-pdv">PDV / Caixa</span>
+                </a>
+            {% endif %}
+            
+            {% if session.get('cargo') == 'master' %}
+                <a href="/produtos" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fa-solid fa-box"></i> <span data-i18n="btn-gerenciar-catalogo">Gerenciar Catálogo</span>
+                </a>
+                <a href="/usuarios" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                    <i class="fa-solid fa-user-gear"></i> <span data-i18n="btn-gerenciar-equipe">Gerenciar Equipe</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
