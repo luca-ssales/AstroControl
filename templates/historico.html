@@ -94,23 +94,23 @@
 <div class="metrics-summary">
     <div class="metric-small" style="border-left: 4px solid var(--primary);">
         <h4 data-i18n="card-faturamento-hoje">Faturamento Hoje</h4>
-        <p class="value">R$ {{ "%.2f"|format(faturamento_dia) }}</p>
+        <p class="value">R$ {{ faturamento_dia|moeda }}</p>
     </div>
     <div class="metric-small" style="border-left: 4px solid var(--sucesso);">
         <h4 data-i18n="card-faturamento-semana">Faturamento Semana</h4>
-        <p class="value">R$ {{ "%.2f"|format(faturamento_semana) }}</p>
+        <p class="value">R$ {{ faturamento_semana|moeda }}</p>
     </div>
     <div class="metric-small" style="border-left: 4px solid var(--alerta);">
         <h4 data-i18n="card-faturamento-mes">Faturamento Mês</h4>
-        <p class="value">R$ {{ "%.2f"|format(faturamento_mes) }}</p>
+        <p class="value">R$ {{ faturamento_mes|moeda }}</p>
     </div>
     <div class="metric-small" style="border-left: 4px solid #a855f7;">
         <h4 data-i18n="card-faturamento-ano">Faturamento Ano</h4>
-        <p class="value">R$ {{ "%.2f"|format(faturamento_ano) }}</p>
+        <p class="value">R$ {{ faturamento_ano|moeda }}</p>
     </div>
     <div class="metric-small" style="border-left: 4px solid var(--texto-escuro);">
         <h4 data-i18n="card-faturamento-total">Faturamento Total</h4>
-        <p class="value">R$ {{ "%.2f"|format(faturamento_total) }}</p>
+        <p class="value">R$ {{ faturamento_total|moeda }}</p>
     </div>
 </div>
 
@@ -122,20 +122,20 @@
     <div class="grid-3" style="margin-top: 10px;">
         <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: var(--radius); padding: 16px; text-align: center;">
             <h4 style="font-size: 0.75rem; color: #065f46; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;" data-i18n="dre-receita">Receita Bruta (Vendas)</h4>
-            <p style="font-size: 1.45rem; font-weight: 700; color: var(--sucesso); margin: 0;">R$ {{ "%.2f"|format(faturamento_total) }}</p>
+            <p style="font-size: 1.45rem; font-weight: 700; color: var(--sucesso); margin: 0;">R$ {{ faturamento_total|moeda }}</p>
         </div>
         <div style="background-color: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius); padding: 16px; text-align: center;">
             <h4 style="font-size: 0.75rem; color: #991b1b; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;" data-i18n="dre-cmv">Custo de Mercadorias (CMV)</h4>
-            <p style="font-size: 1.45rem; font-weight: 700; color: var(--perigo); margin: 0;">- R$ {{ "%.2f"|format(custo_mercadorias) }}</p>
+            <p style="font-size: 1.45rem; font-weight: 700; color: var(--perigo); margin: 0;">- R$ {{ custo_mercadorias|moeda }}</p>
         </div>
         <div style="background-color: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius); padding: 16px; text-align: center;">
             <h4 style="font-size: 0.75rem; color: #92400e; text-transform: uppercase; margin-bottom: 6px; font-weight: 600;" data-i18n="dre-despesas">Despesas Operacionais</h4>
-            <p style="font-size: 1.45rem; font-weight: 700; color: var(--alerta); margin: 0;">- R$ {{ "%.2f"|format(despesas_totais) }}</p>
+            <p style="font-size: 1.45rem; font-weight: 700; color: var(--alerta); margin: 0;">- R$ {{ despesas_totais|moeda }}</p>
         </div>
     </div>
     <div style="display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-primary); padding: 16px 24px; border-radius: var(--radius); border: 1px solid var(--borda); margin-top: 10px;">
         <span style="font-size: 1.05rem; font-weight: 700; color: var(--texto-escuro);" data-i18n="dre-lucro-liquido">LUCRO LÍQUIDO REAL</span>
-        <span style="font-size: 1.7rem; font-weight: 800; color: {% if lucro_liquido >= 0 %}var(--sucesso){% else %}var(--perigo){% endif %};">R$ {{ "%.2f"|format(lucro_liquido) }}</span>
+        <span style="font-size: 1.7rem; font-weight: 800; color: {% if lucro_liquido >= 0 %}var(--sucesso){% else %}var(--perigo){% endif %};">R$ {{ lucro_liquido|moeda }}</span>
     </div>
 </div>
 
@@ -175,10 +175,10 @@
             <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
                 <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600;">
                     <span>{{ v[0] }}</span>
-                    <span>R$ {{ "%.2f"|format(v[1]) }} <span style="font-size: 0.8rem; font-weight: 400; color: var(--texto-mutado);">({{ v[2] }} <span data-i18n="menu-vendas">vendas</span>)</span></span>
+                    <span>R$ {{ v[1]|moeda }} <span style="font-size: 0.8rem; font-weight: 400; color: var(--texto-mutado);">({{ v[2] }} <span data-i18n="menu-vendas">vendas</span>)</span></span>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--texto-mutado); margin-top: 4px;">
-                    <span><span data-i18n="hist-comissoes-label">Comissões:</span> R$ {{ "%.2f"|format(v[3] or 0.0) }}</span>
+                    <span><span data-i18n="hist-comissoes-label">Comissões:</span> R$ {{ v[3] or 0.0|moeda }}</span>
                     <span data-i18n="hist-meta-ind">Meta individual</span>
                 </div>
                 <div class="progress-bar-container">
@@ -204,7 +204,7 @@
             <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;">
                 <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600;">
                     <span>{{ p[0] }}</span>
-                    <span>{{ p[1] }} <span data-i18n="hist-un">un.</span> <span style="font-size: 0.8rem; font-weight: 400; color: var(--texto-mutado);">(R$ {{ "%.2f"|format(p[2]) }} <span data-i18n="hist-gerados">gerados</span>)</span></span>
+                    <span>{{ p[1] }} <span data-i18n="hist-un">un.</span> <span style="font-size: 0.8rem; font-weight: 400; color: var(--texto-mutado);">(R$ {{ p[2]|moeda }} <span data-i18n="hist-gerados">gerados</span>)</span></span>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar-fill fill-success" style="width: {{ p[3] }}%;"></div>
@@ -268,7 +268,7 @@
                             <span class="badge badge-danger" style="font-size: 0.75rem;" data-i18n="badge-nao">Não</span>
                         {% endif %}
                     </td>
-                    <td style="font-weight: 700; color: var(--sucesso);">R$ {{ "%.2f"|format(v[7]) }}</td>
+                    <td style="font-weight: 700; color: var(--sucesso);">R$ {{ v[7]|moeda }}</td>
                     <td class="text-center">
                         <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
                             <button type="button" class="btn btn-secondary" onclick="toggleDetails({{ v[0] }})" style="padding: 6px 10px; font-size: 0.8rem;" title="Detalhes">
@@ -311,8 +311,8 @@
                                                 <span>{{ item[0] }}</span>
                                             </td>
                                             <td style="padding: 6px 10px;" class="text-center">{{ item[1] }}</td>
-                                            <td style="padding: 6px 10px;">R$ {{ "%.2f"|format(item[2]) }}</td>
-                                            <td style="padding: 6px 10px; font-weight: 600;">R$ {{ "%.2f"|format(item[3]) }}</td>
+                                            <td style="padding: 6px 10px;">R$ {{ item[2]|moeda }}</td>
+                                            <td style="padding: 6px 10px; font-weight: 600;">R$ {{ item[3]|moeda }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -336,7 +336,7 @@
                                     </div>
                                 {% endif %}
                                 <div style="margin-top: 12px; font-size: 0.8rem; color: var(--texto-mutado);">
-                                    <strong data-i18n="hist-comissao-vendedor">Comissão do Vendedor:</strong> R$ {{ "%.2f"|format(v[16] or 0.0) }}
+                                    <strong data-i18n="hist-comissao-vendedor">Comissão do Vendedor:</strong> R$ {{ v[16] or 0.0|moeda }}
                                 </div>
                             </div>
                         </div>
@@ -380,7 +380,7 @@
                         <div style="font-size: 0.75rem; color: var(--texto-mutado);">CPF: {{ v[2] or 'N/A' }}</div>
                     </td>
                     <td>{{ v[3] or 'N/A' }}</td>
-                    <td style="font-weight: 700; color: var(--primary);">R$ {{ "%.2f"|format(v[7]) }}</td>
+                    <td style="font-weight: 700; color: var(--primary);">R$ {{ v[7]|moeda }}</td>
                     <td class="text-center">
                         <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
                             <button type="button" class="btn btn-secondary" onclick="toggleDetails({{ v[0] }})" style="padding: 6px 10px; font-size: 0.8rem;" title="Detalhes">
@@ -423,8 +423,8 @@
                                                 <span>{{ item[0] }}</span>
                                             </td>
                                             <td style="padding: 6px 10px;" class="text-center">{{ item[1] }}</td>
-                                            <td style="padding: 6px 10px;">R$ {{ "%.2f"|format(item[2]) }}</td>
-                                            <td style="padding: 6px 10px; font-weight: 600;">R$ {{ "%.2f"|format(item[3]) }}</td>
+                                            <td style="padding: 6px 10px;">R$ {{ item[2]|moeda }}</td>
+                                            <td style="padding: 6px 10px; font-weight: 600;">R$ {{ item[3]|moeda }}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -633,7 +633,7 @@
                         grid: { color: '#f1f5f9' },
                         ticks: {
                             callback: function(value) {
-                                return 'R$ ' + value.toFixed(2);
+                                return 'R$ ' + Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                             }
                         }
                     },

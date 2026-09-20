@@ -564,8 +564,8 @@
                         style="width: 70px; padding: 6px; text-align: center;"
                         onchange="alterarQtdPDV(${item.id}, this.value)">
                 </td>
-                <td>R$ ${item.preco.toFixed(2)}</td>
-                <td style="font-weight: 600; color: var(--texto-escuro);">R$ ${subtotal.toFixed(2)}</td>
+                <td>R$ ${formatarBRL(item.preco)}</td>
+                <td style="font-weight: 600; color: var(--texto-escuro);">R$ ${formatarBRL(subtotal)}</td>
                 <td class="text-center">
                     <button type="button" class="btn-remove" onclick="removerDoCarrinhoPDV(${item.id})">
                         <i class="fa-solid fa-trash-can"></i>
@@ -574,6 +574,11 @@
             `;
             itemsBody.appendChild(tr);
         });
+
+        // Helper para moeda brasileira
+        function formatarBRL(v) {
+            return Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
         // Calcula desconto do cupom
         let desconto = 0;
@@ -599,21 +604,21 @@
             totalBox.innerHTML = `
                 <div style="display: flex; flex-direction: column; width: 100%; align-items: flex-end; gap: 4px;">
                     <div style="font-size: 0.85rem; color: var(--texto-mutado); font-weight: 600;">
-                        SUBTOTAL: R$ ${subtotalVenda.toFixed(2)}
+                        SUBTOTAL: R$ ${formatarBRL(subtotalVenda)}
                     </div>
                     <div style="font-size: 0.88rem; color: var(--danger); font-weight: 700;">
-                        CUPOM (${cupomAplicado.codigo}): - R$ ${desconto.toFixed(2)}
+                        CUPOM (${cupomAplicado.codigo}): - R$ ${formatarBRL(desconto)}
                     </div>
                     <div style="font-size: 1.1rem; font-weight: 700; color: var(--texto-mutado); margin-top: 5px;">
                         TOTAL DA VENDA
                     </div>
-                    <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">${totalFinal.toFixed(2)}</span></span>
+                    <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">${formatarBRL(totalFinal)}</span></span>
                 </div>
             `;
         } else {
             totalBox.innerHTML = `
                 <span style="font-weight: 700; color: var(--texto-mutado); font-size: 1.1rem;" data-i18n="pdv-total-venda-label">TOTAL DA VENDA</span>
-                <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">${subtotalVenda.toFixed(2)}</span></span>
+                <span style="font-size: 1.8rem; font-weight: 700; color: var(--sucesso);">R$ <span id="valor-total">${formatarBRL(subtotalVenda)}</span></span>
             `;
         }
         

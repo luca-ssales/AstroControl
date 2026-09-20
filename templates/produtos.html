@@ -93,15 +93,15 @@
 {% block content %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
     <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <select id="filtro-categoria" onchange="filtrarProdutos()" style="padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--borda); background: var(--card); color: var(--texto-escuro); width: 200px; margin: 0;">
-            <option value="">Todas as Categorias</option>
+        <select id="filtro-categoria" onchange="filtrarProdutos()" style="padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--borda); background-color: var(--bg-card); color: var(--texto-escuro); width: 200px; margin: 0; cursor: pointer;">
+            <option value="" style="background: var(--bg-card); color: var(--texto-escuro);">Todas as Categorias</option>
             {% for cat in categorias %}
-            <option value="{{ cat[1] }}">{{ cat[1] }}</option>
+            <option value="{{ cat[1] }}" style="background: var(--bg-card); color: var(--texto-escuro);">{{ cat[1] }}</option>
             {% endfor %}
         </select>
         
         <div style="position: relative; width: 280px;">
-            <input type="text" id="busca-produtos" oninput="filtrarProdutos()" placeholder="Buscar por Nome, SKU ou Barras..." style="padding: 10.5px 14px 10.5px 38px; border-radius: var(--radius); border: 1px solid var(--borda); background: var(--card); color: var(--texto-escuro); margin: 0; width: 100%; box-sizing: border-box;">
+            <input type="text" id="busca-produtos" oninput="filtrarProdutos()" placeholder="Buscar por Nome, SKU ou Barras..." style="padding: 10.5px 14px 10.5px 38px; border-radius: var(--radius); border: 1px solid var(--borda); background-color: var(--bg-card); color: var(--texto-escuro); margin: 0; width: 100%; box-sizing: border-box;">
             <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--texto-mutado); pointer-events: none;"></i>
         </div>
     </div>
@@ -161,9 +161,9 @@
                 </td>
                 <td>{{ produto[3] }}</td>
                 {% if session.get('cargo') in ['master', 'admin'] %}
-                    <td style="font-weight: 600; color: var(--texto-mutado);">R$ {{ "%.2f"|format(produto[8]) }}</td>
+                    <td style="font-weight: 600; color: var(--texto-mutado);">R$ {{ produto[8]|moeda }}</td>
                 {% endif %}
-                <td style="font-weight: 600; color: var(--texto-escuro);">R$ {{ "%.2f"|format(produto[4]) }}</td>
+                <td style="font-weight: 600; color: var(--texto-escuro);">R$ {{ produto[4]|moeda }}</td>
                 <td style="font-weight: 600;">{{ produto[5] }}</td>
                 <td>
                     {% if produto[5] <= produto[6] %}
@@ -183,6 +183,23 @@
                     </td>
                 {% endif %}
             </tr>
+            {% else %}
+                <tr>
+                    <td colspan="13" style="padding: 0; border: none;">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fa-solid fa-box-open"></i>
+                            </div>
+                            <h3>Nenhum produto encontrado</h3>
+                            <p>Não há produtos cadastrados ou correspondentes ao filtro atual.</p>
+                            {% if session.get('cargo') in ['master', 'admin'] or (session.get('cargo') == 'personalizado' and 'produtos' in (session.get('permissoes') or '')) %}
+                                <button onclick="document.getElementById('open-modal-btn').click()" class="btn btn-primary" style="font-size: 0.88rem;">
+                                    <i class="fa-solid fa-plus"></i> Cadastrar Primeiro Produto
+                                </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>

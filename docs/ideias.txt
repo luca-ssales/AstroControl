@@ -68,4 +68,3 @@ Login do colaborador primeira vez,
     quando vendeu
     onde vendeu 
     oq vendeu 
-    

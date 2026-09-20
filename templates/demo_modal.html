@@ -1,0 +1,262 @@
+<!-- MODAL DE AMBIENTE DE DEMONSTRAÇÃO (PORTFÓLIO) -->
+<div id="demo-disclaimer-modal" style="
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+">
+    <div style="
+        background: linear-gradient(145deg, #090d16 0%, #111827 100%);
+        border: 1px solid rgba(139, 92, 246, 0.35);
+        border-radius: 24px;
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(139, 92, 246, 0.25);
+        max-width: 580px;
+        width: 100%;
+        color: #f3f4f6;
+        padding: 32px;
+        position: relative;
+        transform: scale(0.92) translateY(20px);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-sizing: border-box;
+        overflow: hidden;
+    " id="demo-modal-content">
+        
+        <!-- Efeito de brilho de fundo decorativo -->
+        <div style="
+            position: absolute;
+            top: -70px; right: -70px;
+            width: 200px; height: 200px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+        "></div>
+        <div style="
+            position: absolute;
+            bottom: -70px; left: -70px;
+            width: 180px; height: 180px;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.25) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+        "></div>
+
+        <!-- Botão Fechar (X) -->
+        <button type="button" onclick="fecharDemoModal(false)" style="
+            position: absolute;
+            top: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 1.1rem;
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+        " onmouseover="this.style.color='#ffffff'; this.style.backgroundColor='rgba(239, 68, 68, 0.2)';" onmouseout="this.style.color='#94a3b8'; this.style.backgroundColor='rgba(255, 255, 255, 0.06)';">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- Cabeçalho do Modal com Badge e Ícone -->
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+            <div style="
+                width: 56px; height: 56px;
+                border-radius: 16px;
+                background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(6, 182, 212, 0.25) 100%);
+                border: 1px solid rgba(139, 92, 246, 0.5);
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.8rem;
+                flex-shrink: 0;
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
+            ">
+                🚀
+            </div>
+            <div>
+                <div style="
+                    display: inline-flex; align-items: center; gap: 6px;
+                    background: rgba(139, 92, 246, 0.15);
+                    border: 1px solid rgba(139, 92, 246, 0.4);
+                    color: #c084fc;
+                    padding: 3px 10px;
+                    border-radius: 20px;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    text-transform: uppercase;
+                    margin-bottom: 4px;
+                ">
+                    <i class="fa-solid fa-flask"></i> Ambiente de Demonstração
+                </div>
+                <h3 style="margin: 0; font-size: 1.35rem; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">
+                    AstroControl — Gestão Comercial
+                </h3>
+            </div>
+        </div>
+
+        <!-- Descrição Informativa -->
+        <div style="
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        ">
+            <p style="margin: 0 0 12px 0;">
+                <strong style="color: #67e8f9;"><i class="fa-solid fa-circle-info"></i> Atenção aos dados exibidos:</strong>
+            </p>
+            <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+                <li>Todos os <strong>produtos, valores, vendas, clientes, CPFs e relatórios</strong> cadastrados neste sistema são <strong>100% fictícios</strong>.</li>
+                <li>Este ambiente foi montado exclusivamente para <strong>demonstração de recursos, usabilidade e portfólio de desenvolvimento</strong>.</li>
+                <li>Nenhuma transação financeira real é processada e nenhum dado sensível é armazenado.</li>
+            </ul>
+        </div>
+
+        <!-- Dica de Interatividade e Acesso Rápido -->
+        <div style="
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px dashed rgba(139, 92, 246, 0.35);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        ">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-key" style="color: #a78bfa; font-size: 1.1rem;"></i>
+                <div style="font-size: 0.85rem;">
+                    <span style="color: #94a3b8;">Acesso Master (Total):</span><br>
+                    <strong style="color: #f1f5f9;">master@loja.com</strong> &bull; Senha: <strong style="color: #f1f5f9;">123456</strong>
+                </div>
+            </div>
+            <span style="
+                background: rgba(6, 182, 212, 0.15);
+                color: #22d3ee;
+                border: 1px solid rgba(6, 182, 212, 0.3);
+                padding: 4px 10px;
+                border-radius: 8px;
+                font-size: 0.78rem;
+                font-weight: 600;
+            ">
+                ✨ Totalmente Interativo
+            </span>
+        </div>
+
+        <!-- Ações do Rodapé -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chk-nao-mostrar" style="width: auto; cursor: pointer; accent-color: #8b5cf6;" checked>
+                Não exibir novamente nesta sessão
+            </label>
+
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button type="button" onclick="fecharDemoModal(true)" style="
+                    background: rgba(255, 255, 255, 0.06);
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    color: #cbd5e1;
+                    padding: 12px 18px;
+                    border-radius: 12px;
+                    font-size: 0.9rem;
+                    font-weight: 500;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.1)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.06)';">
+                    Fechar
+                </button>
+
+                <a href="/demo-login" style="
+                    background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+                    color: #ffffff;
+                    text-decoration: none;
+                    border: none;
+                    padding: 12px 26px;
+                    border-radius: 12px;
+                    font-weight: 700;
+                    font-size: 0.96rem;
+                    cursor: pointer;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.45);
+                    transition: all 0.2s ease;
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 24px rgba(139, 92, 246, 0.65)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 18px rgba(139, 92, 246, 0.45)';">
+                    <i class="fa-solid fa-rocket"></i> Entrar no Painel Master Agora
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function abrirDemoModal() {
+        const modal = document.getElementById('demo-disclaimer-modal');
+        const content = document.getElementById('demo-modal-content');
+        if (!modal || !content) return;
+
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            content.style.transform = 'scale(1) translateY(0)';
+        }, 15);
+    }
+
+    function fecharDemoModal(salvarPreferencia = false) {
+        const modal = document.getElementById('demo-disclaimer-modal');
+        const content = document.getElementById('demo-modal-content');
+        const chk = document.getElementById('chk-nao-mostrar');
+
+        if (!modal || !content) return;
+
+        if (salvarPreferencia && chk && chk.checked) {
+            sessionStorage.setItem('astro_demo_dismissed', 'true');
+        }
+
+        modal.style.opacity = '0';
+        content.style.transform = 'scale(0.92) translateY(20px)';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+    }
+
+    // Fecha ao clicar fora do card
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('demo-disclaimer-modal');
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    fecharDemoModal(true);
+                }
+            });
+        }
+
+        // Verifica se já foi fechado nesta sessão
+        const dismiss = sessionStorage.getItem('astro_demo_dismissed');
+        if (!dismiss) {
+            // Abre automaticamente após 600ms para causar uma transição suave
+            setTimeout(() => {
+                abrirDemoModal();
+            }, 600);
+        }
+    });
+
+    // Fecha ao pressionar ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            fecharDemoModal(true);
+        }
+    });
+</script>

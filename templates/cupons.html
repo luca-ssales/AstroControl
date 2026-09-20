@@ -346,7 +346,7 @@
                                         {% if c[2] == 'percentual' %}
                                             {{ c[3] }}%
                                         {% else %}
-                                            R$ {{ "%.2f"|format(c[3]) }}
+                                            R$ {{ c[3]|moeda }}
                                         {% endif %}
                                     </td>
                                     <td style="color: var(--texto-mutado, #94a3b8);">

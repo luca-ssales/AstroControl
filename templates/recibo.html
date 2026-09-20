@@ -268,8 +268,8 @@
                     <tr>
                         <td>{{ item[0] }}</td>
                         <td style="text-align: center;">{{ item[1] }}</td>
-                        <td style="text-align: right;">{{ "%.2f"|format(item[2]) }}</td>
-                        <td style="text-align: right;">{{ "%.2f"|format(item[3]) }}</td>
+                        <td style="text-align: right;">{{ item[2]|moeda }}</td>
+                        <td style="text-align: right;">{{ item[3]|moeda }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -303,17 +303,17 @@
         <div style="text-align: right; margin-top: 10px; border-top: 1px dashed #000000; padding-top: 8px;">
             <div class="receipt-row" style="font-size: 0.8rem;">
                 <span>SUBTOTAL:</span>
-                <span>R$ {{ "%.2f"|format(venda[7] + venda[17]) }}</span>
+                <span>R$ {{ venda[7] + venda[17]|moeda }}</span>
             </div>
             <div class="receipt-row" style="font-size: 0.8rem; color: #dc2626;">
                 <span>DESCONTO CUPOM ({{ venda[16] }}):</span>
-                <span>- R$ {{ "%.2f"|format(venda[17]) }}</span>
+                <span>- R$ {{ venda[17]|moeda }}</span>
             </div>
         </div>
         {% endif %}
         <div class="total-box">
             <span><strong>{% if status == 'orcamento' %}TOTAL ESTIMADO:{% else %}TOTAL GERAL:{% endif %}</strong></span>
-            <span>R$ {{ "%.2f"|format(venda[7]) }}</span>
+            <span>R$ {{ venda[7]|moeda }}</span>
         </div>
 
         <!-- MENSAGEM FINAL -->

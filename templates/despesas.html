@@ -89,7 +89,7 @@
                     </span>
                 </td>
                 <td>{{ d[4] }}</td>
-                <td style="font-weight: 700; color: var(--perigo);">- R$ {{ "%.2f"|format(d[2]) }}</td>
+                <td style="font-weight: 700; color: var(--perigo);">- R$ {{ d[2]|moeda }}</td>
                 <td>
                     <div class="actions">
                         <a href="/despesas/excluir/{{ d[0] }}" class="btn-action delete" title="Excluir despesa" onclick="return confirm('Tem certeza que deseja excluir esta despesa?')">
@@ -101,9 +101,17 @@
             {% endfor %}
             {% if not despesas %}
             <tr id="no-expenses-row">
-                <td colspan="7" style="text-align: center; color: var(--texto-mutado); padding: 40px;">
-                    <i class="fa-solid fa-file-invoice-dollar" style="font-size: 2.5rem; margin-bottom: 12px; color: #cbd5e1;"></i>
-                    <p style="font-weight: 500;" data-i18n="desp-nenhuma-cadastrada">Nenhuma despesa cadastrada no momento.</p>
+                <td colspan="7" style="padding: 0; border: none;">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </div>
+                        <h3 data-i18n="desp-nenhuma-cadastrada">Nenhuma despesa cadastrada</h3>
+                        <p>Registre saídas e custos operacionais para manter seu fluxo de caixa preciso.</p>
+                        <button onclick="document.getElementById('open-modal-btn').click()" class="btn btn-primary" style="font-size: 0.88rem;">
+                            <i class="fa-solid fa-plus"></i> Registrar Nova Despesa
+                        </button>
+                    </div>
                 </td>
             </tr>
             {% endif %}

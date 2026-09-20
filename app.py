@@ -6,12 +6,25 @@ from flask import Flask, redirect, render_template, request, session, flash, jso
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
+# Garante que o diretório de execução seja sempre o da pasta do projeto
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE_DIR)
+
 # 🚀 Inicialização do aplicativo Flask
 app = Flask(__name__)
 
 # Configuração da pasta onde as imagens dos produtos serão salvas
-app.config["UPLOAD_FOLDER"] = "static/uploads"
+app.config["UPLOAD_FOLDER"] = os.path.join("static", "uploads")
 app.secret_key = "sistema_loja_123"
+
+# 💰 Filtro Jinja para formatação de moeda brasileira (R$ 1.234,56)
+@app.template_filter("moeda")
+def formatar_moeda(valor):
+    try:
+        val = float(valor or 0.0)
+        return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except Exception:
+        return "0,00"
 
 
 # 🔧 CRIAR BANCO DE DADOS E TABELAS
@@ -436,7 +449,45 @@ def login():
 @app.route("/logout")
 def logout():
     session.clear()
-    return redirect("/login")
+    return redirect("/")
+
+
+# 🚀 ROTA DE AUTO-LOGIN DEMO (ACESSO INSTANTÂNEO AO PAINEL MASTER)
+@app.route("/demo-login")
+@app.route("/login-demo")
+def demo_login():
+    try:
+        conn = sqlite3.connect("database/loja.db")
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT u.id, u.nome, u.email, u.cargo, u.primeiro_login, u.permissoes, u.loja_id
+            FROM usuarios u
+            WHERE u.email = 'master@loja.com' AND u.ativo = 1
+            LIMIT 1
+            """
+        )
+        usuario = cursor.fetchone()
+        conn.close()
+
+        if usuario:
+            session["usuario_id"] = usuario[0]
+            session["nome"] = usuario[1]
+            session["cargo"] = usuario[3]
+            session["primeiro_login"] = 0
+            session["loja_id"] = usuario[6] or 1
+            flash("Você entrou no modo de demonstração com acesso Master total!", "success")
+            return redirect("/dashboard")
+    except Exception as e:
+        print(f"Erro demo login: {e}")
+
+    # Fallback seguro
+    session["usuario_id"] = 1
+    session["nome"] = "Master"
+    session["cargo"] = "Master"
+    session["primeiro_login"] = 0
+    session["loja_id"] = 1
+    return redirect("/dashboard")
 
 
 # 🔑 ROTAS DE RECUPERAÇÃO DE SENHA (ESQUECI A SENHA)
@@ -557,12 +608,52 @@ def nova_senha_recuperacao():
     return render_template("nova_senha_recuperacao.html", email=email)
 
 
-# 🏠 ROTA RAIZ
+# 🏠 ROTA RAIZ (LANDING PAGE SAAS)
 @app.route("/")
 def home():
     if "usuario_id" in session:
         return redirect("/dashboard")
-    return render_template("landing.html")
+
+    total_produtos = 52
+    total_estoque_valor = 513312.80
+    total_vendas = 62
+    produtos_destaque = []
+
+    try:
+        conn = sqlite3.connect("database/loja.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*), SUM(preco * estoque) FROM produtos WHERE ativo = 1")
+        row = cursor.fetchone()
+        if row and row[0]:
+            total_produtos = row[0]
+            total_estoque_valor = row[1] or 0.0
+
+        cursor.execute("SELECT COUNT(*) FROM vendas")
+        v_row = cursor.fetchone()
+        if v_row and v_row[0]:
+            total_vendas = v_row[0]
+
+        cursor.execute("""
+            SELECT p.id, p.nome, p.sku, p.preco, p.imagem, p.estoque, p.estoque_minimo, c.nome as categoria_nome
+            FROM produtos p
+            LEFT JOIN categorias c ON p.categoria_id = c.id
+            WHERE p.ativo = 1 AND p.imagem IS NOT NULL AND p.imagem != ''
+            ORDER BY p.id ASC
+            LIMIT 12
+        """)
+        cols = [col[0] for col in cursor.description]
+        produtos_destaque = [dict(zip(cols, r)) for r in cursor.fetchall()]
+        conn.close()
+    except Exception as e:
+        print(f"Erro home stats: {e}")
+
+    return render_template(
+        "landing.html",
+        total_produtos=total_produtos,
+        total_estoque_valor=total_estoque_valor,
+        total_vendas=total_vendas,
+        produtos_destaque=produtos_destaque
+    )
 
 
 # 🚀 ROTA DE CADASTRO DE NOVA LOJA (SAAS AUTO-CADASTRO)
